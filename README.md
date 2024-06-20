@@ -1,7 +1,7 @@
 # BarikLab
 
 ## What are we trying to do ?
-    Our approach was to experiment with computer vision to figure out if a classification problem could be transformed to an object detection problem. 
+Our approach was to experiment with computer vision to figure out if a classification problem could be transformed to an object detection problem. 
 ## DATA:
     Our data for training the model 
 
