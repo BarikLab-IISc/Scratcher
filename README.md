@@ -1,7 +1,11 @@
 # BarikLab
 
+## Problem Statement
+Nociefensive behavioural analysis of mice and calculating the duration of behaviours in a sample with a good accuracy.
+
 ## What are we trying to do ?
 Our approach was to experiment with computer vision to figure out if a classification problem could be transformed to an object detection problem. 
+
 ## DATA:
     Our data for training the model 
 
