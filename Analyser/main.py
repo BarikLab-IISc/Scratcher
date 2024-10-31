@@ -4,29 +4,30 @@ from ultralytics import YOLO
 from video_processing import process_video
 from behaviour_filtering import filter_behaviours
 from behaviour_analysis import analyse_behaviours
+from cli_parser import create_parser
 
 def change_cwd(path):
     os.chdir(path)
 
 if __name__ == "__main__":
-    output_folder = r"D:\Raghav\Model_itch_others_loco\Paper 1.3\TO_ANALYSE\Hm4di\DCZ\Batch2"
-    model = YOLO(r"D:\Raghav\Model_itch_others_loco\Paper 1.3\runs\detect\train\weights\best.pt")
+    parser = create_parser()
+    args = parser.parse_args()
     
-    change_cwd(output_folder)
-    print(os.getcwd())
+    model = YOLO(args.model)
     
-    paths = [f for f in os.listdir(output_folder) if f.endswith('.mp4')]
-    print(paths)
+    change_cwd(args.input_folder)
+    print(f"Current working directory: {os.getcwd()}")
+    
+    paths = [f for f in os.listdir(args.input_folder) if f.endswith('.mp4')]
+    print(f"Found video files: {paths}")
     
     for i in paths:
         name = re.search(r'([^\\]+)\.mp4$', i).group(1)
-        process_video(model, i, output_folder, name, 0.5)
+        process_video(model, os.path.join(args.input_folder, i), args.output_folder, name, args.conf_threshold)
     
-    # Filter behaviours
-    excel_paths = [f for f in os.listdir(output_folder) if f.endswith('.xlsx')]
+    excel_paths = [f for f in os.listdir(args.output_folder) if f.endswith('.xlsx')]
     for i in excel_paths:
-        output_path = "raster_plot_input_" + i
-        filter_behaviours(os.path.join(output_folder, i), output_path)
+        output_path = os.path.join(args.output_folder, "raster_plot_input_" + i)
+        filter_behaviours(os.path.join(args.output_folder, i), output_path)
 
-    # Analyze behaviours
-    analyse_behaviours(output_folder)
+    analyse_behaviours(args.output_folder)
