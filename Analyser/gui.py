@@ -3,7 +3,6 @@ from tkinter import filedialog, messagebox, ttk
 import os
 import re
 import time
-import pandas as pd
 from ultralytics import YOLO  # Assuming SCRATCHER is based on YOLO for training, prediction, etc.
 from video_processing import process_video
 from behaviour_filtering import filter_behaviours
@@ -92,7 +91,6 @@ def start_training():
     data_path = data_entry.get()
     epochs = epochs_entry.get()
 
-    # Validate and set up environment
     if not os.path.exists(cwd):
         messagebox.showerror("Error", "The specified working directory does not exist.")
         return
@@ -112,7 +110,6 @@ def start_training():
         messagebox.showerror("Error", "Number of epochs should be an integer.")
         return
 
-    # Initialize SCRATCHER model and start training
     model = YOLO(model_path)
     begin = time.time()
 
@@ -121,7 +118,6 @@ def start_training():
         end = time.time()
         time_taken = end - begin
 
-        # Save time taken to a file
         with open("Time_taken.txt", "w") as f:
             f.write(f"Time taken for training: {time_taken:.2f} seconds")
 
@@ -133,17 +129,22 @@ def start_training():
 # Create main window
 root = tk.Tk()
 root.title("Scratcher 1.3 ©")
+root.geometry("600x700")  # Adjust window size as needed
+
+# Centering layout configuration
+root.grid_columnconfigure(0, weight=1)
 
 # Display SCRATCHER at the top of the window
 title_label = tk.Label(root, text="SCRATCHER", font=("Arial", 24, "bold"))
 title_label.pack(pady=20)
 
-# Create the frames for each functionality (Analyser, Prediction, Training) and add them to notebook
+# Create notebook for tabs and add them to center of page
 notebook = ttk.Notebook(root)
 
-# Analyser Tab
+# Analyser Frame
 analyser_frame = ttk.Frame(notebook)
 notebook.add(analyser_frame, text="Analyser")
+
 tk.Label(analyser_frame, text="SCRATCHER Model File:").grid(row=0, column=0, padx=10, pady=10)
 model_entry = tk.Entry(analyser_frame, width=50)
 model_entry.grid(row=0, column=1, padx=10, pady=10)
@@ -167,9 +168,10 @@ conf_threshold_entry.grid(row=3, column=1, padx=10, pady=10)
 process_button = tk.Button(analyser_frame, text="Start Processing", command=start_processing, bg="green", fg="white")
 process_button.grid(row=4, column=1, padx=10, pady=20)
 
-# Prediction Tab
+# Prediction Frame
 predict_frame = ttk.Frame(notebook)
 notebook.add(predict_frame, text="Prediction")
+
 tk.Label(predict_frame, text="SCRATCHER Model Path:").grid(row=0, column=0, padx=10, pady=5)
 model_entry_predict = tk.Entry(predict_frame, width=50)
 model_entry_predict.grid(row=0, column=1, padx=10, pady=5)
@@ -199,7 +201,7 @@ predict_button.grid(row=5, column=1, padx=10, pady=20)
 result_label = tk.Label(predict_frame, text="")
 result_label.grid(row=6, column=1, padx=10, pady=5)
 
-# Training Tab
+# Training Frame
 train_frame = ttk.Frame(notebook)
 notebook.add(train_frame, text="Training")
 tk.Label(train_frame, text="Working Directory:").grid(row=0, column=0, padx=10, pady=10)
@@ -226,16 +228,23 @@ train_button = tk.Button(train_frame, text="Start Training", command=start_train
 train_button.grid(row=4, column=1, padx=10, pady=20)
 
 # Add functionality buttons to access different tabs
-analyser_button = tk.Button(root, text="Analyser", command=lambda: notebook.select(analyser_frame), width=20)
-analyser_button.pack(side="left", padx=20, pady=10)
+buttons_frame = tk.Frame(root)
+buttons_frame.pack(pady=10)
 
-predict_button = tk.Button(root, text="Prediction", command=lambda: notebook.select(predict_frame), width=20)
-predict_button.pack(side="left", padx=20, pady=10)
+analyser_button = tk.Button(buttons_frame, text="Analyser", command=lambda: notebook.select(analyser_frame), width=20)
+analyser_button.grid(row=0, column=0, padx=10)
 
-train_button = tk.Button(root, text="Training", command=lambda: notebook.select(train_frame), width=20)
-train_button.pack(side="left", padx=20, pady=10)
+predict_button = tk.Button(buttons_frame, text="Prediction", command=lambda: notebook.select(predict_frame), width=20)
+predict_button.grid(row=0, column=1, padx=10)
 
+train_button = tk.Button(buttons_frame, text="Training", command=lambda: notebook.select(train_frame), width=20)
+train_button.grid(row=0, column=2, padx=10)
+
+notebook.pack(pady=20)
+
+# Add footer
 footer_label = tk.Label(root, text="BarikLab\nCentre for Neuroscience\nIndian Institute of Science, Bangalore, India", font=("Arial", 10), fg="gray")
 footer_label.pack(side="bottom", pady=10)
 
+# Start the GUI main loop
 root.mainloop()
