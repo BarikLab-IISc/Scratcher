@@ -9,7 +9,6 @@ from video_processing import process_video
 from behaviour_filtering import filter_behaviours
 from behaviour_analysis import analyse_behaviours
 
-# Define functions for browsing files and directories
 def browse_directory(entry):
     directory = filedialog.askdirectory()
     if directory:
@@ -52,7 +51,6 @@ def start_processing():
 
     messagebox.showinfo("Processing Complete", "Video processing complete. Starting behavior filtering...")
 
-    # Filter behaviors in processed videos
     excel_files = [f for f in os.listdir(output_folder) if f.endswith('.xlsx')]
     for excel_file in excel_files:
         input_path = os.path.join(output_folder, excel_file)
@@ -61,43 +59,36 @@ def start_processing():
 
     messagebox.showinfo("Filtering Complete", "Behavior filtering complete. Starting behavior analysis...")
 
-    # Analyze behaviors
     analyse_behaviours(output_folder)
 
     messagebox.showinfo("Analysis Complete", "Behavior analysis complete.")
 
-# Create the GUI
 root = tk.Tk()
 root.title("Behavior Analysis GUI")
 
-# Model File Path
 tk.Label(root, text="YOLO Model File:").grid(row=0, column=0, padx=10, pady=10)
 model_entry = tk.Entry(root, width=50)
 model_entry.grid(row=0, column=1, padx=10, pady=10)
 model_button = tk.Button(root, text="Browse", command=lambda: browse_file(model_entry))
 model_button.grid(row=0, column=2, padx=10, pady=10)
 
-# Input Folder Path
 tk.Label(root, text="Input Folder:").grid(row=1, column=0, padx=10, pady=10)
 input_folder_entry = tk.Entry(root, width=50)
 input_folder_entry.grid(row=1, column=1, padx=10, pady=10)
 input_folder_button = tk.Button(root, text="Browse", command=lambda: browse_directory(input_folder_entry))
 input_folder_button.grid(row=1, column=2, padx=10, pady=10)
 
-# Output Folder Path
 tk.Label(root, text="Output Folder:").grid(row=2, column=0, padx=10, pady=10)
 output_folder_entry = tk.Entry(root, width=50)
 output_folder_entry.grid(row=2, column=1, padx=10, pady=10)
 output_folder_button = tk.Button(root, text="Browse", command=lambda: browse_directory(output_folder_entry))
 output_folder_button.grid(row=2, column=2, padx=10, pady=10)
 
-# Confidence Threshold
 tk.Label(root, text="Confidence Threshold:").grid(row=3, column=0, padx=10, pady=10)
 conf_threshold_entry = tk.Entry(root, width=50)
-conf_threshold_entry.insert(0, "0.6")  # Default value
+conf_threshold_entry.insert(0, "0.6")  # defaut value is set to 0.6
 conf_threshold_entry.grid(row=3, column=1, padx=10, pady=10)
 
-# Start Processing Button
 process_button = tk.Button(root, text="Start Processing", command=start_processing, bg="green", fg="white")
 process_button.grid(row=4, column=1, padx=10, pady=20)
 
