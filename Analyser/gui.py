@@ -4,7 +4,7 @@ import os
 import re
 import time
 import pandas as pd
-from ultralytics import YOLO
+from ultralytics import YOLO  # Assuming SCRATCHER is based on YOLO for training, prediction, etc.
 from video_processing import process_video
 from behaviour_filtering import filter_behaviours
 from behaviour_analysis import analyse_behaviours
@@ -66,7 +66,7 @@ def start_processing():
     messagebox.showinfo("Analysis Complete", "Behavior analysis complete.")
 
 # Prediction GUI functions
-def run_yolo():
+def run_scratcher():
     model_path = model_entry_predict.get()
     input_path = input_entry.get()
     change_dir = dir_entry.get()
@@ -85,20 +85,66 @@ def run_yolo():
     end = time.time()
     result_label.config(text=f"Prediction completed in {end - begin:.2f} seconds.")
 
-# Create main window with tabs
+# Training GUI functions
+def start_training():
+    cwd = cwd_entry.get()
+    model_path = model_entry_train.get()
+    data_path = data_entry.get()
+    epochs = epochs_entry.get()
+
+    # Validate and set up environment
+    if not os.path.exists(cwd):
+        messagebox.showerror("Error", "The specified working directory does not exist.")
+        return
+    os.chdir(cwd)
+
+    if not os.path.exists(model_path):
+        messagebox.showerror("Error", "The specified model file does not exist.")
+        return
+
+    if not os.path.exists(data_path):
+        messagebox.showerror("Error", "The specified data configuration file does not exist.")
+        return
+
+    try:
+        epochs = int(epochs)
+    except ValueError:
+        messagebox.showerror("Error", "Number of epochs should be an integer.")
+        return
+
+    # Initialize SCRATCHER model and start training
+    model = YOLO(model_path)
+    begin = time.time()
+
+    try:
+        results = model.train(data=data_path, epochs=epochs)
+        end = time.time()
+        time_taken = end - begin
+
+        # Save time taken to a file
+        with open("Time_taken.txt", "w") as f:
+            f.write(f"Time taken for training: {time_taken:.2f} seconds")
+
+        messagebox.showinfo("Training Complete", f"Training completed in {time_taken:.2f} seconds. See Time_taken.txt for details.")
+
+    except Exception as e:
+        messagebox.showerror("Error", f"An error occurred during training:\n{e}")
+
+# Create main window
 root = tk.Tk()
-root.title("Behavior Analysis & YOLO Prediction GUI")
+root.title("Scratcher 1.3 ©")
 
-# Create the tab control
+# Display SCRATCHER at the top of the window
+title_label = tk.Label(root, text="SCRATCHER", font=("Arial", 24, "bold"))
+title_label.pack(pady=20)
+
+# Create the frames for each functionality (Analyser, Prediction, Training) and add them to notebook
 notebook = ttk.Notebook(root)
-notebook.pack(padx=10, pady=10, expand=True)
 
-# Create Analyser Tab
+# Analyser Tab
 analyser_frame = ttk.Frame(notebook)
 notebook.add(analyser_frame, text="Analyser")
-
-# Add components to Analyser Tab
-tk.Label(analyser_frame, text="YOLO Model File:").grid(row=0, column=0, padx=10, pady=10)
+tk.Label(analyser_frame, text="SCRATCHER Model File:").grid(row=0, column=0, padx=10, pady=10)
 model_entry = tk.Entry(analyser_frame, width=50)
 model_entry.grid(row=0, column=1, padx=10, pady=10)
 tk.Button(analyser_frame, text="Browse", command=lambda: browse_file(model_entry)).grid(row=0, column=2, padx=10, pady=10)
@@ -121,25 +167,23 @@ conf_threshold_entry.grid(row=3, column=1, padx=10, pady=10)
 process_button = tk.Button(analyser_frame, text="Start Processing", command=start_processing, bg="green", fg="white")
 process_button.grid(row=4, column=1, padx=10, pady=20)
 
-# Create Prediction Tab
+# Prediction Tab
 predict_frame = ttk.Frame(notebook)
-notebook.add(predict_frame, text="YOLO Prediction")
-
-# Add components to Prediction Tab
-tk.Label(predict_frame, text="Model Path:").grid(row=0, column=0, padx=10, pady=5)
+notebook.add(predict_frame, text="Prediction")
+tk.Label(predict_frame, text="SCRATCHER Model Path:").grid(row=0, column=0, padx=10, pady=5)
 model_entry_predict = tk.Entry(predict_frame, width=50)
 model_entry_predict.grid(row=0, column=1, padx=10, pady=5)
-tk.Button(predict_frame, text="Browse", command=lambda: model_entry_predict.insert(0, filedialog.askopenfilename())).grid(row=0, column=2)
+tk.Button(predict_frame, text="Browse", command=lambda: browse_file(model_entry_predict)).grid(row=0, column=2)
 
 tk.Label(predict_frame, text="Input Video Path:").grid(row=1, column=0, padx=10, pady=5)
 input_entry = tk.Entry(predict_frame, width=50)
 input_entry.grid(row=1, column=1, padx=10, pady=5)
-tk.Button(predict_frame, text="Browse", command=lambda: input_entry.insert(0, filedialog.askopenfilename())).grid(row=1, column=2)
+tk.Button(predict_frame, text="Browse", command=lambda: browse_file(input_entry)).grid(row=1, column=2)
 
 tk.Label(predict_frame, text="Change Directory:").grid(row=2, column=0, padx=10, pady=5)
 dir_entry = tk.Entry(predict_frame, width=50)
 dir_entry.grid(row=2, column=1, padx=10, pady=5)
-tk.Button(predict_frame, text="Browse", command=lambda: dir_entry.insert(0, filedialog.askdirectory())).grid(row=2, column=2)
+tk.Button(predict_frame, text="Browse", command=lambda: browse_directory(dir_entry)).grid(row=2, column=2)
 
 save_var = tk.BooleanVar(value=True)
 tk.Checkbutton(predict_frame, text="Save Output", variable=save_var).grid(row=3, column=0, padx=10, pady=5)
@@ -149,10 +193,49 @@ conf_entry = tk.Entry(predict_frame, width=10)
 conf_entry.insert(0, "0.5")
 conf_entry.grid(row=4, column=1, padx=10, pady=5, sticky="w")
 
-tk.Button(predict_frame, text="Run YOLO Prediction", command=run_yolo).grid(row=5, column=0, columnspan=3, pady=20)
+predict_button = tk.Button(predict_frame, text="Run SCRATCHER", command=run_scratcher, bg="blue", fg="white")
+predict_button.grid(row=5, column=1, padx=10, pady=20)
 
 result_label = tk.Label(predict_frame, text="")
-result_label.grid(row=6, column=0, columnspan=3, pady=5)
+result_label.grid(row=6, column=1, padx=10, pady=5)
 
-# Run the GUI loop
+# Training Tab
+train_frame = ttk.Frame(notebook)
+notebook.add(train_frame, text="Training")
+tk.Label(train_frame, text="Working Directory:").grid(row=0, column=0, padx=10, pady=10)
+cwd_entry = tk.Entry(train_frame, width=50)
+cwd_entry.grid(row=0, column=1, padx=10, pady=10)
+tk.Button(train_frame, text="Browse", command=lambda: browse_directory(cwd_entry)).grid(row=0, column=2, padx=10, pady=10)
+
+tk.Label(train_frame, text="SCRATCHER Model Path:").grid(row=1, column=0, padx=10, pady=10)
+model_entry_train = tk.Entry(train_frame, width=50)
+model_entry_train.grid(row=1, column=1, padx=10, pady=10)
+tk.Button(train_frame, text="Browse", command=lambda: browse_file(model_entry_train)).grid(row=1, column=2, padx=10, pady=10)
+
+tk.Label(train_frame, text="Data Configuration Path:").grid(row=2, column=0, padx=10, pady=10)
+data_entry = tk.Entry(train_frame, width=50)
+data_entry.grid(row=2, column=1, padx=10, pady=10)
+tk.Button(train_frame, text="Browse", command=lambda: browse_file(data_entry)).grid(row=2, column=2, padx=10, pady=10)
+
+tk.Label(train_frame, text="Number of Epochs:").grid(row=3, column=0, padx=10, pady=10)
+epochs_entry = tk.Entry(train_frame, width=10)
+epochs_entry.insert(0, "10")  # Default number of epochs
+epochs_entry.grid(row=3, column=1, padx=10, pady=10, sticky="w")
+
+train_button = tk.Button(train_frame, text="Start Training", command=start_training, bg="blue", fg="white")
+train_button.grid(row=4, column=1, padx=10, pady=20)
+
+# Add functionality buttons to access different tabs
+analyser_button = tk.Button(root, text="Analyser", command=lambda: notebook.select(analyser_frame), width=20)
+analyser_button.pack(side="left", padx=20, pady=10)
+
+predict_button = tk.Button(root, text="Prediction", command=lambda: notebook.select(predict_frame), width=20)
+predict_button.pack(side="left", padx=20, pady=10)
+
+train_button = tk.Button(root, text="Training", command=lambda: notebook.select(train_frame), width=20)
+train_button.pack(side="left", padx=20, pady=10)
+
+footer_label = tk.Label(root, text="BarikLab\nCentre for Neuroscience\nIndian Institute of Science, Bangalore, India", font=("Arial", 10), fg="gray")
+footer_label.pack(side="bottom", pady=10)
+
 root.mainloop()
