@@ -203,4 +203,28 @@ train_frame = ttk.Frame(notebook)
 notebook.add(train_frame, text="Training")
 
 # Add components to Training Tab
-tk.Label(train_frame
+tk.Label(train_frame, text="Working Directory:").grid(row=0, column=0, padx=10, pady=10)
+cwd_entry = tk.Entry(train_frame, width=50)
+cwd_entry.grid(row=0, column=1, padx=10, pady=10)
+tk.Button(train_frame, text="Browse", command=lambda: browse_directory(cwd_entry)).grid(row=0, column=2, padx=10, pady=10)
+
+tk.Label(train_frame, text="Pre-trained Model Path:").grid(row=1, column=0, padx=10, pady=10)
+model_entry_train = tk.Entry(train_frame, width=50)
+model_entry_train.grid(row=1, column=1, padx=10, pady=10)
+tk.Button(train_frame, text="Browse", command=lambda: browse_file(model_entry_train)).grid(row=1, column=2, padx=10, pady=10)
+
+tk.Label(train_frame, text="Data Configuration Path:").grid(row=2, column=0, padx=10, pady=10)
+data_entry = tk.Entry(train_frame, width=50)
+data_entry.grid(row=2, column=1, padx=10, pady=10)
+tk.Button(train_frame, text="Browse", command=lambda: browse_file(data_entry)).grid(row=2, column=2, padx=10, pady=10)
+
+tk.Label(train_frame, text="Number of Epochs:").grid(row=3, column=0, padx=10, pady=10)
+epochs_entry = tk.Entry(train_frame, width=10)
+epochs_entry.insert(0, "10")  # Default number of epochs
+epochs_entry.grid(row=3, column=1, padx=10, pady=10, sticky="w")
+
+train_button = tk.Button(train_frame, text="Start Training", command=start_training, bg="blue", fg="white")
+train_button.grid(row=4, column=1, padx=10, pady=20)
+
+# Start the GUI main loop
+root.mainloop()
