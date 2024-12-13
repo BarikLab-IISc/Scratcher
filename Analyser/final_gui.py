@@ -9,7 +9,6 @@ from video_processing import process_video
 from behaviour_filtering import filter_behaviours
 from behaviour_analysis import analyse_behaviours
 
-# Define functions for browsing files and directories
 def browse_directory(entry):
     directory = filedialog.askdirectory()
     if directory:
@@ -22,7 +21,6 @@ def browse_file(entry):
         entry.delete(0, tk.END)
         entry.insert(0, file_path)
 
-# Analyser GUI functions
 def start_processing():
     model_path = model_entry.get()
     input_folder = input_folder_entry.get()
@@ -44,7 +42,6 @@ def start_processing():
         messagebox.showerror("Error", "Confidence threshold should be a float value.")
         return
 
-    # Process each video
     model = YOLO(model_path)
     video_files = [f for f in os.listdir(input_folder) if f.endswith('.mp4')]
     for video_file in video_files:
@@ -65,7 +62,6 @@ def start_processing():
 
     messagebox.showinfo("Analysis Complete", "Behavior analysis complete.")
 
-# Prediction GUI functions
 def run_yolo():
     model_path = model_entry_predict.get()
     input_path = input_entry.get()
@@ -85,14 +81,12 @@ def run_yolo():
     end = time.time()
     result_label.config(text=f"Prediction completed in {end - begin:.2f} seconds.")
 
-# Training GUI functions
 def start_training():
     cwd = cwd_entry.get()
     model_path = model_entry_train.get()
     data_path = data_entry.get()
     epochs = epochs_entry.get()
 
-    # Validate and set up environment
     if not os.path.exists(cwd):
         messagebox.showerror("Error", "The specified working directory does not exist.")
         return
@@ -112,7 +106,6 @@ def start_training():
         messagebox.showerror("Error", "Number of epochs should be an integer.")
         return
 
-    # Initialize YOLO model and start training
     model = YOLO(model_path)
     begin = time.time()
 
@@ -121,7 +114,6 @@ def start_training():
         end = time.time()
         time_taken = end - begin
 
-        # Save time taken to a file
         with open("Time_taken.txt", "w") as f:
             f.write(f"Time taken for training: {time_taken:.2f} seconds")
 
@@ -130,19 +122,15 @@ def start_training():
     except Exception as e:
         messagebox.showerror("Error", f"An error occurred during training:\n{e}")
 
-# Create main window with tabs
 root = tk.Tk()
 root.title("Behavior Analysis & YOLO GUI")
 
-# Create the tab control
 notebook = ttk.Notebook(root)
 notebook.pack(padx=10, pady=10, expand=True)
 
-# Create Analyser Tab
 analyser_frame = ttk.Frame(notebook)
 notebook.add(analyser_frame, text="Analyser")
 
-# Add components to Analyser Tab
 tk.Label(analyser_frame, text="YOLO Model File:").grid(row=0, column=0, padx=10, pady=10)
 model_entry = tk.Entry(analyser_frame, width=50)
 model_entry.grid(row=0, column=1, padx=10, pady=10)
@@ -160,17 +148,15 @@ tk.Button(analyser_frame, text="Browse", command=lambda: browse_directory(output
 
 tk.Label(analyser_frame, text="Confidence Threshold:").grid(row=3, column=0, padx=10, pady=10)
 conf_threshold_entry = tk.Entry(analyser_frame, width=50)
-conf_threshold_entry.insert(0, "0.6")  # Default value
+conf_threshold_entry.insert(0, "0.6")  
 conf_threshold_entry.grid(row=3, column=1, padx=10, pady=10)
 
 process_button = tk.Button(analyser_frame, text="Start Processing", command=start_processing, bg="green", fg="white")
 process_button.grid(row=4, column=1, padx=10, pady=20)
 
-# Create Prediction Tab
 predict_frame = ttk.Frame(notebook)
 notebook.add(predict_frame, text="YOLO Prediction")
 
-# Add components to Prediction Tab
 tk.Label(predict_frame, text="Model Path:").grid(row=0, column=0, padx=10, pady=5)
 model_entry_predict = tk.Entry(predict_frame, width=50)
 model_entry_predict.grid(row=0, column=1, padx=10, pady=5)
@@ -198,11 +184,9 @@ tk.Button(predict_frame, text="Run YOLO Prediction", command=run_yolo).grid(row=
 result_label = tk.Label(predict_frame, text="")
 result_label.grid(row=6, column=0, columnspan=3, pady=5)
 
-# Create Training Tab
 train_frame = ttk.Frame(notebook)
 notebook.add(train_frame, text="Training")
 
-# Add components to Training Tab
 tk.Label(train_frame, text="Working Directory:").grid(row=0, column=0, padx=10, pady=10)
 cwd_entry = tk.Entry(train_frame, width=50)
 cwd_entry.grid(row=0, column=1, padx=10, pady=10)
@@ -220,11 +204,10 @@ tk.Button(train_frame, text="Browse", command=lambda: browse_file(data_entry)).g
 
 tk.Label(train_frame, text="Number of Epochs:").grid(row=3, column=0, padx=10, pady=10)
 epochs_entry = tk.Entry(train_frame, width=10)
-epochs_entry.insert(0, "10")  # Default number of epochs
+epochs_entry.insert(0, "10") 
 epochs_entry.grid(row=3, column=1, padx=10, pady=10, sticky="w")
 
 train_button = tk.Button(train_frame, text="Start Training", command=start_training, bg="blue", fg="white")
 train_button.grid(row=4, column=1, padx=10, pady=20)
 
-# Start the GUI main loop
 root.mainloop()
