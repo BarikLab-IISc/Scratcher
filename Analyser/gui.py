@@ -3,12 +3,11 @@ from tkinter import filedialog, messagebox, ttk
 import os
 import re
 import time
-from ultralytics import YOLO  # Assuming SCRATCHER is based on YOLO for training, prediction, etc.
+from ultralytics import YOLO  
 from video_processing import process_video
 from behaviour_filtering import filter_behaviours
 from behaviour_analysis import analyse_behaviours
 
-# Define functions for browsing files and directories
 def browse_directory(entry):
     directory = filedialog.askdirectory()
     if directory:
@@ -21,7 +20,6 @@ def browse_file(entry):
         entry.delete(0, tk.END)
         entry.insert(0, file_path)
 
-# Analyser GUI functions
 def start_processing():
     model_path = model_entry.get()
     input_folder = input_folder_entry.get()
@@ -43,7 +41,6 @@ def start_processing():
         messagebox.showerror("Error", "Confidence threshold should be a float value.")
         return
 
-    # Process each video
     model = YOLO(model_path)
     video_files = [f for f in os.listdir(input_folder) if f.endswith('.mp4')]
     for video_file in video_files:
@@ -64,7 +61,6 @@ def start_processing():
 
     messagebox.showinfo("Analysis Complete", "Behavior analysis complete.")
 
-# Prediction GUI functions
 def run_scratcher():
     model_path = model_entry_predict.get()
     input_path = input_entry.get()
@@ -84,7 +80,6 @@ def run_scratcher():
     end = time.time()
     result_label.config(text=f"Prediction completed in {end - begin:.2f} seconds.")
 
-# Training GUI functions
 def start_training():
     cwd = cwd_entry.get()
     model_path = model_entry_train.get()
@@ -126,22 +121,17 @@ def start_training():
     except Exception as e:
         messagebox.showerror("Error", f"An error occurred during training:\n{e}")
 
-# Create main window
 root = tk.Tk()
 root.title("Scratcher 1.3 ©")
-root.geometry("600x700")  # Adjust window size as needed
+root.geometry("600x700") 
 
-# Centering layout configuration
 root.grid_columnconfigure(0, weight=1)
 
-# Display SCRATCHER at the top of the window
 title_label = tk.Label(root, text="SCRATCHER", font=("Arial", 24, "bold"))
 title_label.pack(pady=20)
 
-# Create notebook for tabs and add them to center of page
 notebook = ttk.Notebook(root)
 
-# Analyser Frame
 analyser_frame = ttk.Frame(notebook)
 notebook.add(analyser_frame, text="Analyser")
 
@@ -168,7 +158,6 @@ conf_threshold_entry.grid(row=3, column=1, padx=10, pady=10)
 process_button = tk.Button(analyser_frame, text="Start Processing", command=start_processing, bg="green", fg="white")
 process_button.grid(row=4, column=1, padx=10, pady=20)
 
-# Prediction Frame
 predict_frame = ttk.Frame(notebook)
 notebook.add(predict_frame, text="Prediction")
 
@@ -201,7 +190,6 @@ predict_button.grid(row=5, column=1, padx=10, pady=20)
 result_label = tk.Label(predict_frame, text="")
 result_label.grid(row=6, column=1, padx=10, pady=5)
 
-# Training Frame
 train_frame = ttk.Frame(notebook)
 notebook.add(train_frame, text="Training")
 tk.Label(train_frame, text="Working Directory:").grid(row=0, column=0, padx=10, pady=10)
@@ -221,13 +209,12 @@ tk.Button(train_frame, text="Browse", command=lambda: browse_file(data_entry)).g
 
 tk.Label(train_frame, text="Number of Epochs:").grid(row=3, column=0, padx=10, pady=10)
 epochs_entry = tk.Entry(train_frame, width=10)
-epochs_entry.insert(0, "10")  # Default number of epochs
+epochs_entry.insert(0, "10") 
 epochs_entry.grid(row=3, column=1, padx=10, pady=10, sticky="w")
 
 train_button = tk.Button(train_frame, text="Start Training", command=start_training, bg="blue", fg="white")
 train_button.grid(row=4, column=1, padx=10, pady=20)
 
-# Add functionality buttons to access different tabs
 buttons_frame = tk.Frame(root)
 buttons_frame.pack(pady=10)
 
@@ -242,9 +229,7 @@ train_button.grid(row=0, column=2, padx=10)
 
 notebook.pack(pady=20)
 
-# Add footer
 footer_label = tk.Label(root, text="BarikLab\nCentre for Neuroscience\nIndian Institute of Science, Bangalore, India", font=("Arial", 10), fg="gray")
 footer_label.pack(side="bottom", pady=10)
 
-# Start the GUI main loop
 root.mainloop()
