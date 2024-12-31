@@ -7,16 +7,22 @@ Nociefensive behavioural analysis of mice and calculating the duration of behavi
 Our approach was to experiment with computer vision to figure out if a classification problem could be transformed to an object detection problem. 
 
 ## DATA:
-    Our data for training the model 
+data will be added soon
 
-## MODEL:
+## Running the Analyser - CLI
+    python parser.py -m <model_path> -i <input_folder> -o <output_folder> [-c <conf_threshold>]
 
-## Model : 
-    The Model folder has 4 files :
-    - train.py -- Train your own model with this file by replacing the model's path with your model of choice.
-    - predct.py --  Use this file for analysing a video with your own model (by replacing the path to your own weights, by default our models weights are given as the argument)
-    - frame-wise_analysis.py -- Frame-wise analysis of the video to calculate the number of frames in each class along with the frame numbers.
-                             -- Outputs 'n' .txt files for 'n' classes in the dataset along with another file for storing 'no detection' frames
-    - statistical_analysis.py -- Analysing the confidence levels of the frames of each class and getting the stats out
+Argument	           |          Description
+-m, --model	           |   Required     Path to the YOLO model weights file.
+-i, --input_folder	   |   Required     Path to the folder containing video files.
+-o, --output_folder	   |   Required     Path to the folder where output files will be saved.
+-c, --conf_threshold   |   Optional     Confidence threshold for detections (default: 0.6).
+
+## Running the Analyser - GUI
+    python gui.py
+
+<img width="847" alt="image" src="https://github.com/user-attachments/assets/8c90c569-48f9-4119-8470-b8f50e791963" />
+
+
 
 
