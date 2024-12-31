@@ -12,11 +12,12 @@ data will be added soon
 ## Running the Analyser - CLI
     python parser.py -m <model_path> -i <input_folder> -o <output_folder> [-c <conf_threshold>]
 
-Argument	           |          Description
--m, --model	           |   Required     Path to the YOLO model weights file.
--i, --input_folder	   |   Required     Path to the folder containing video files.
--o, --output_folder	   |   Required     Path to the folder where output files will be saved.
--c, --conf_threshold   |   Optional     Confidence threshold for detections (default: 0.6).
+| Argument               | Description                                                                 |
+|------------------------|-----------------------------------------------------------------------------|
+| `-m`, `--model`        | **Required**. Path to the YOLO model weights file.                          |
+| `-i`, `--input_folder` | **Required**. Path to the folder containing video files.                    |
+| `-o`, `--output_folder`| **Required**. Path to the folder where output files will be saved.          |
+| `-c`, `--conf_threshold`| *Optional*. Confidence threshold for detections (default: `0.6`).          |
 
 ## Running the Analyser - GUI
     python gui.py
