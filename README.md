@@ -10,6 +10,8 @@ Our approach was to experiment with computer vision to figure out if a classific
 data will be added soon
 
 ## Running the Analyser - CLI
+    git clone "https://github.com/BarikLab-IISc/Scratcher"
+
     python parser.py -m <model_path> -i <input_folder> -o <output_folder> [-c <conf_threshold>]
 
 | Argument               | Description                                                                 |
