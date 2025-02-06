@@ -1,4 +1,4 @@
-<center> SCRATCHER </center>
+### <p style="text-align:center"> SCRATCHER </p>
 
 ## Problem Statement
 Nociefensive behavioural analysis of mice and calculating the duration of behaviours in a sample with a good accuracy.
