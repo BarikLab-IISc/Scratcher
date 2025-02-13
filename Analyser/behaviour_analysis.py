@@ -66,6 +66,7 @@ def analyse_behaviours(output_folder):
         
         with pd.ExcelWriter(file_path, mode='a') as writer:
             pivoted_3min_df.to_excel(writer, sheet_name='3-min-batching', index=True)
+        with pd.ExcelWriter(file_path, mode='a') as writer:
             pivoted_1min_df.to_excel(writer, sheet_name='1-min-batching', index=True)
 
 
