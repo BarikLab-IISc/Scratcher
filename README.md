@@ -1,7 +1,7 @@
 <center> SCRATCHER </center>
 
 ## Problem Statement
-An independent end-to-end analysis suite for the automated identification, quanitifcation and high-throughput of nape directed scratching behaviour in rodent models of acute and chronic itch to decipher the neural basis of various scratching behaviours.
+An independent end-to-end analysis suite for the automated identification, quanitifcation and high-throughput analysis of nape directed scratching behaviour in rodent models of acute and chronic itch to decipher the neural basis of various scratching behaviours.
 
 ## What are we trying to do ?
 Our approach was to experiment with computer vision to figure out if a classification problem could be transformed to an object detection problem. 
