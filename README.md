@@ -1,4 +1,4 @@
-<center> SCRATCHER </center>
+### <p style="text-align:center"> SCRATCHER </p>
 
 ## Problem Statement
 An independent end-to-end analysis deep-learning driven suite for the automated identification, quantifcation and high-throughput analysis of nape-directed scratching behaviour in rodent models of acute and chronic itch to decipher the neural basis of various scratching behaviours.
