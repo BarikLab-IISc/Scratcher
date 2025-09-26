@@ -317,7 +317,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact
 
-- **Lab Website**: [BarikLab IISc]([https://bariklab.iisc.ac.in](https://sites.google.com/view/molecules-cells-and-circuits/home))
+- **Lab Website**: [BarikLab IISc](https://sites.google.com/view/molecules-cells-and-circuits/home)
 - **Issues**: [GitHub Issues](https://github.com/BarikLab-IISc/Scratcher/issues)
 - **Email**: [nandidevangshu@gmail.com]
 
