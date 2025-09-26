@@ -30,13 +30,18 @@ data will be added soon
 
  -->
 
+# Scratcher
 
- # Scratcher
+<img width="200" height="200" alt="image" src="https://github.com/user-attachments/assets/99690b33-8da1-4016-9221-bf1c010b310b" />
+
+*Automated Analysis of Rodent Scratching Behavior*
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
 [![YOLO](https://img.shields.io/badge/YOLO-v8%2B-red.svg)](https://github.com/ultralytics/ultralytics)
 [![bioRxiv](https://img.shields.io/badge/bioRxiv-10.1101%2F2025.08.18.670778-green.svg)](https://www.biorxiv.org/content/10.1101/2025.08.18.670778v1)
+
+</div>
 
 ## Overview
 
@@ -94,7 +99,7 @@ Launch the graphical user interface:
 
 ```bash
 cd Analyser
-python gui.py
+    python gui.py
 ```
 
 The GUI provides three main tabs:
@@ -312,9 +317,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact
 
-- **Lab Website**: [BarikLab IISc](https://bariklab.iisc.ac.in)
+- **Lab Website**: [BarikLab IISc]([https://bariklab.iisc.ac.in](https://sites.google.com/view/molecules-cells-and-circuits/home))
 - **Issues**: [GitHub Issues](https://github.com/BarikLab-IISc/Scratcher/issues)
-- **Email**: [Contact Information]
+- **Email**: [nandidevangshu@gmail.com]
 
 ## References
 
