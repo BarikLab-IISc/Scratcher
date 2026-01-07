@@ -115,7 +115,7 @@ Launch the graphical user interface:
 
 ```bash
 cd Analyser
-    python gui.py
+python final_gui.py
 ```
 
 The GUI provides three main tabs:
