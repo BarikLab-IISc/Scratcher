@@ -60,7 +60,7 @@ data will be added soon
 ### 💥  What’s New in Scratcher
 
 **📌 v1.3**
-- 💡 Scratcher 1.3 now supports `.avi` file format
+- 💡 Scratcher 1.3(GUI version) now supports `.avi` file format
 - 💡 A comprehensive, step-wise tutorial has been added to help new users get started with **Scratcher** and **Roboflow**
 
 ### Key Features
