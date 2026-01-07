@@ -32,10 +32,20 @@ data will be added soon
 
 # Scratcher
 
-<img width="200" height="200" alt="image" src="https://github.com/user-attachments/assets/99690b33-8da1-4016-9221-bf1c010b310b" />
+<div align="center">
 
-*Automated Analysis of Rodent Scratching Behavior*
+<!-- <img src="https://github.com/user-attachments/assets/99690b33-8da1-4016-9221-bf1c010b310b"
+     alt="Scratcher Logo"
+     width="200"
+     height="200" /> -->
+<img width="200" height="200" alt="image" src="https://github.com/user-attachments/assets/971e6c30-2005-4974-b1bc-5968fb1de373" />
 
+
+
+# Scratcher  
+**Automated Analysis of Rodent Scratching Behavior**
+
+![Version](https://img.shields.io/badge/version-1.3-brightgreen)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
 [![YOLO](https://img.shields.io/badge/YOLO-v8%2B-red.svg)](https://github.com/ultralytics/ultralytics)
