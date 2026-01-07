@@ -57,7 +57,7 @@ data will be added soon
 
 **Scratcher** is an end-to-end deep learning-driven analysis suite for automated identification, quantification, and high-throughput analysis of nape-directed scratching behavior in rodent models of acute and chronic itch. This tool transforms behavioral classification problems into object detection tasks using state-of-the-art computer vision techniques to decipher the neural basis of various scratching behaviors.
 
-### 💥  What’s New in Scratcher v1.3
+### 💥  What’s New in Scratcher
 
 **📌 v1.3**
 - 💡 Scratcher 1.3 now supports `.avi` file format
