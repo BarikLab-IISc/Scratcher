@@ -50,32 +50,67 @@
 - CUDA-compatible GPU (recommended for faster processing)
 - 8GB+ RAM (16GB+ recommended for large datasets)
 
-### Quick Install
+---
+
+### Installing in a Virtual Environment (Recommended)
+
+To avoid dependency conflicts, it is strongly recommended to install Scratcher inside a Python virtual environment.
+
+```bash
+# Clone the repository
+git clone https://github.com/BarikLab-IISc/Scratcher.git
+cd Scratcher/Analyser
+
+# Create a virtual environment
+python3 -m venv scratcher-venv
+
+# Activate the virtual environment
+source scratcher-venv/bin/activate
+# On Windows: scratcher-venv\Scripts\activate
+
+# Upgrade pip and install dependencies
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+
+# Verify installation
+python -c "import ultralytics; print('Installation successful!')"
+````
+
+---
+
+### Quick Install (Without Virtual Environment)
+
+> ⚠️ We don't recommended this, but this section is provided for convenience.
 
 1. **Clone the repository**:
+
    ```bash
    git clone https://github.com/BarikLab-IISc/Scratcher.git
    cd Scratcher
    ```
 
 2. **Install dependencies**:
+
    ```bash
    cd Analyser
    pip install -r requirements.txt
    ```
 
 3. **Verify installation**:
+
    ```bash
    python -c "import ultralytics; print('Installation successful!')"
    ```
 
+---
+
 ### Dependencies
 
-- `ultralytics>=8.0.20` - YOLO model framework
-- `opencv-python>=4.8.1.78` - Computer vision operations
-- `pandas>=1.5.3` - Data manipulation and analysis
-- `openpyxl>=3.1.2` - Excel file handling
-- `tkinter` - GUI framework (included with Python)
+* `ultralytics>=8.0.20` — YOLO model framework
+* `opencv-python>=4.8.1.78` — Computer vision operations
+* `pandas>=1.5.3` — Data manipulation and analysis
+* `openpyxl>=3.1.2` — Excel file handling
+* `tkinter` — GUI framework (included with Python)
 
 ## Quick Start
 
@@ -89,9 +124,10 @@ python final_gui.py
 ```
 
 The GUI provides three main tabs:
-- **Detection**: Process videos with pre-trained models
-- **Analysis**: Generate behavioral analysis and visualizations
-- **Training**: Train custom YOLO models
+
+* **Detection**: Process videos with pre-trained models
+* **Analysis**: Generate behavioral analysis and visualizations
+* **Training**: Train custom YOLO models
 
 ### Command Line Interface
 
@@ -104,12 +140,12 @@ python main.py -m <model_path> -i <input_folder> -o <output_folder> [-c <conf_th
 
 #### Command Line Arguments
 
-| Argument | Description |
-|----------|-------------|
-| `-m`, `--model` | **Required**. Path to the YOLO model weights file |
-| `-i`, `--input_folder` | **Required**. Path to the folder containing video files |
-| `-o`, `--output_folder` | **Required**. Path to the folder where output files will be saved |
-| `-c`, `--conf_threshold` | *Optional*. Confidence threshold for detections (default: `0.6`) |
+| Argument                 | Description                                                       |
+| ------------------------ | ----------------------------------------------------------------- |
+| `-m`, `--model`          | **Required**. Path to the YOLO model weights file                 |
+| `-i`, `--input_folder`   | **Required**. Path to the folder containing video files           |
+| `-o`, `--output_folder`  | **Required**. Path to the folder where output files will be saved |
+| `-c`, `--conf_threshold` | *Optional*. Confidence threshold for detections (default: `0.6`)  |
 
 ### Example Usage
 
