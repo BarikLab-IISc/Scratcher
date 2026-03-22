@@ -20,7 +20,7 @@ def plot_heatmaps(file_path, output_dir, fig_size=(12, 6)):
     try:
         df = pd.read_excel(file_path, header=0)
         time = df.iloc[:, 0]
-        data = df.iloc[:, 1:]
+        data = df.iloc[:, 1:].apply(pd.to_numeric, errors='coerce').fillna(0)
 
         # Transpose: rows = mice, columns = time points
         data_t = data.transpose()

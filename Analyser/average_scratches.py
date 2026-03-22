@@ -21,7 +21,8 @@ def plot_average_scratches(file_path, output_path, fig_size=(10, 6)):
         labels = []
 
         for col in mouse_headers:
-            avg_values.append(data[col].mean())
+            numeric_col = pd.to_numeric(data[col], errors='coerce')
+            avg_values.append(numeric_col.mean())
             labels.append(col)
 
         if not avg_values:

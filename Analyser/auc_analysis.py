@@ -23,7 +23,9 @@ def plot_auc(file_path, output_path, fig_size=(8, 6)):
         mouse_names = []
 
         for col in mouse_columns:
-            auc = simpson(data[col].values, x=time.values)
+            y = pd.to_numeric(data[col], errors='coerce').dropna()
+            t = pd.to_numeric(time, errors='coerce')[y.index]
+            auc = simpson(y.values, x=t.values)
             auc_values.append(auc)
             mouse_names.append(col)
 

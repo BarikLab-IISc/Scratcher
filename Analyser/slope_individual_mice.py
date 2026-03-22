@@ -15,7 +15,7 @@ def plot_slope_individual_mice(file_path, output_path, title="Scratching Duratio
     try:
         # Read Excel file
         data = pd.read_excel(file_path, header=0)
-        time = data.iloc[:, 0]
+        time = pd.to_numeric(data.iloc[:, 0], errors='coerce')
         mouse_columns = data.columns[1:]
         
         # Determine styling based on bg_color
@@ -38,7 +38,7 @@ def plot_slope_individual_mice(file_path, output_path, title="Scratching Duratio
         
         # Plot data and regression lines
         for col, color in zip(mouse_columns, colors * (len(mouse_columns) // len(colors) + 1)):
-            y = data[col]
+            y = pd.to_numeric(data[col], errors='coerce').fillna(0)
             reg_result = linregress(time, y)
             slope, intercept, r_value = reg_result.slope, reg_result.intercept, reg_result.rvalue
             regression_line = intercept + slope * time
@@ -67,7 +67,7 @@ def plot_slope_individual_mice(file_path, output_path, title="Scratching Duratio
             ax_inset.set_facecolor('black')
             
         for col, color in zip(mouse_columns, colors * (len(mouse_columns) // len(colors) + 1)):
-            y = data[col]
+            y = pd.to_numeric(data[col], errors='coerce').fillna(0)
             reg_result = linregress(time, y)
             slope, intercept = reg_result.slope, reg_result.intercept
             regression_line = intercept + slope * time

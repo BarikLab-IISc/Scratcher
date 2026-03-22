@@ -24,13 +24,15 @@ def plot_peak_scratch_duration(file_path, output_path, fig_size=(8, 6)):
         labels = []     # mouse identifiers
 
         for col in mouse_headers:
-            idx_peak = data[col].idxmax()
+            idx_peak = data[col].apply(pd.to_numeric, errors='coerce').idxmax()
             x_coords.append(time.iloc[idx_peak])
-            y_coords.append(data[col].iloc[idx_peak])
+            y_coords.append(pd.to_numeric(data[col], errors='coerce').iloc[idx_peak])
             labels.append(col)
 
-        # Colormap
-        colors = matplotlib.colormaps.get_cmap('viridis', len(x_coords))
+        # Colormap — get_cmap takes only the name; use Normalize for discrete colours
+        cmap = matplotlib.colormaps.get_cmap('viridis')
+        n = max(len(x_coords) - 1, 1)
+        colors = [cmap(i / n) for i in range(len(x_coords))]
 
         fig, ax = plt.subplots(figsize=fig_size)
 

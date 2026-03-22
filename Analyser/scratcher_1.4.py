@@ -708,98 +708,40 @@ class ScratcherGUI:
     def create_analyse_tab(self):
         analyse_frame = ttk.Frame(self.notebook)
         self.notebook.add(analyse_frame, text="ANALYSE")
-        
-        # Create scrollable frame
+
         canvas = tk.Canvas(analyse_frame, bg='white')
         scrollbar = ttk.Scrollbar(analyse_frame, orient="vertical", command=canvas.yview)
         scrollable_frame = ttk.Frame(canvas)
-        
         scrollable_frame.bind(
             "<Configure>",
             lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
         )
-        
         canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
         canvas.configure(yscrollcommand=scrollbar.set)
-        
-        # Input/Output folders
+
+        # ── 1. Input / Output ────────────────────────────────────────────────
         io_frame = ttk.LabelFrame(scrollable_frame, text="Input/Output Settings", padding=15)
         io_frame.pack(fill='x', padx=20, pady=10)
-        
+
         ttk.Label(io_frame, text="Input Folder:", font=('Arial', 10, 'bold')).pack(anchor='w')
         input_path_frame = ttk.Frame(io_frame)
         input_path_frame.pack(fill='x', pady=5)
         ttk.Entry(input_path_frame, textvariable=self.analysis_input_folder, width=60).pack(side='left', fill='x', expand=True)
-        ttk.Button(input_path_frame, text="Browse", 
-                  command=lambda: self.browse_folder(self.analysis_input_folder)).pack(side='right', padx=(5,0))
-        
-        ttk.Label(io_frame, text="Output Folder:", font=('Arial', 10, 'bold')).pack(anchor='w', pady=(15,0))
+        ttk.Button(input_path_frame, text="Browse",
+                   command=lambda: [self.browse_folder(self.analysis_input_folder),
+                                    self.refresh_video_table()]).pack(side='right', padx=(5, 0))
+
+        ttk.Label(io_frame, text="Output Folder:", font=('Arial', 10, 'bold')).pack(anchor='w', pady=(15, 0))
         output_path_frame = ttk.Frame(io_frame)
         output_path_frame.pack(fill='x', pady=5)
         ttk.Entry(output_path_frame, textvariable=self.analysis_output_folder, width=60).pack(side='left', fill='x', expand=True)
-        ttk.Button(output_path_frame, text="Browse", 
-                  command=lambda: self.browse_folder(self.analysis_output_folder)).pack(side='right', padx=(5,0))
-        
-        # Video selection and settings
-        video_frame = ttk.LabelFrame(scrollable_frame, text="Video Selection & Settings", padding=15)
-        video_frame.pack(fill='x', padx=20, pady=10)
-        
-        # Video selection and settings
-        video_frame = ttk.LabelFrame(scrollable_frame, text="Video Selection & Settings", padding=15)
-        video_frame.pack(fill='x', padx=20, pady=10)
-        
-        # Default video entry with alias and color
-        default_video_frame = ttk.LabelFrame(video_frame, text="Default Video Configuration", padding=10)
-        default_video_frame.pack(fill='x', pady=(0,15))
-        
-        # Video 1 settings
-        video1_frame = ttk.Frame(default_video_frame)
-        video1_frame.pack(fill='x', pady=5)
-        
-        ttk.Label(video1_frame, text="Video 1 Alias:", font=('Arial', 10, 'bold')).pack(side='left')
-        self.video1_alias = tk.StringVar(value="Control")
-        ttk.Entry(video1_frame, textvariable=self.video1_alias, width=15).pack(side='left', padx=(10,20))
-        
-        self.video1_color = tk.StringVar(value="#3498db")
-        self.video1_color_label = tk.Label(video1_frame, text="●", font=('Arial', 20), fg=self.video1_color.get())
-        self.video1_color_label.pack(side='left', padx=5)
-        ttk.Button(video1_frame, text="Choose Color", 
-                  command=lambda: self.choose_default_color(1)).pack(side='left', padx=5)
-        
-        # Add more videos button
-        add_video_btn = ttk.Button(default_video_frame, text="+ Add Another Video", 
-                                  command=self.add_video_config)
-        add_video_btn.pack(pady=10)
-        
-        # Container for additional videos
-        self.additional_videos_frame = ttk.Frame(default_video_frame)
-        self.additional_videos_frame.pack(fill='x')
-        self.video_configs = []
-        
-        ttk.Button(video_frame, text="Select Videos from Folder", command=self.select_videos).pack(pady=10)
-        
-        # Time settings - centered
-        time_label_frame = ttk.Frame(video_frame)
-        time_label_frame.pack(pady=(15,5))
-        ttk.Label(time_label_frame, text="Time Range Settings", font=('Arial', 11, 'bold')).pack()
-        
-        time_frame = ttk.Frame(video_frame)
-        time_frame.pack(pady=5)
-        
-        # Center the time inputs
-        time_inner_frame = ttk.Frame(time_frame)
-        time_inner_frame.pack()
-        
-        ttk.Label(time_inner_frame, text="Start Time (s):", font=('Arial', 10, 'bold')).pack(side='left', padx=(0,5))
-        ttk.Entry(time_inner_frame, textvariable=self.start_time, width=10).pack(side='left', padx=5)
-        
-        ttk.Label(time_inner_frame, text="End Time (s):", font=('Arial', 10, 'bold')).pack(side='left', padx=(20,5))
-        ttk.Entry(time_inner_frame, textvariable=self.end_time, width=10).pack(side='left', padx=5)
-        
-        # Analysis options - centered
+        ttk.Button(output_path_frame, text="Browse",
+                   command=lambda: self.browse_folder(self.analysis_output_folder)).pack(side='right', padx=(5, 0))
+
+        # ── 2. Analysis Options ──────────────────────────────────────────────
         analysis_frame = ttk.LabelFrame(scrollable_frame, text="Analysis Options", padding=15)
         analysis_frame.pack(fill='x', padx=20, pady=10)
-        
+
         analyses = [
             "Itch Bout Frequency",
             "Slope of scratching session (rate of increase or decrease)",
@@ -810,56 +752,155 @@ class ScratcherGUI:
             "Average Scratches per Mouse",
             "Heatmap (ΔF/F per Mouse)",
         ]
-        
+
         self.analysis_vars = {}
-        for analysis in analyses:
+        # two-column layout
+        col1 = ttk.Frame(analysis_frame)
+        col2 = ttk.Frame(analysis_frame)
+        col1.pack(side='left', fill='both', expand=True)
+        col2.pack(side='left', fill='both', expand=True)
+        for i, analysis in enumerate(analyses):
             var = tk.BooleanVar()
             self.analysis_vars[analysis] = var
-            ttk.Checkbutton(analysis_frame, text=analysis, variable=var).pack(anchor='w', pady=3)
-        
-        # Plot settings - centered layout
+            target = col1 if i < 4 else col2
+            ttk.Checkbutton(target, text=analysis, variable=var).pack(anchor='w', pady=3)
+
+        # ── 3. Video Settings (auto-populated table) ─────────────────────────
+        video_outer = ttk.LabelFrame(scrollable_frame, text="Video Selection & Settings", padding=15)
+        video_outer.pack(fill='x', padx=20, pady=10)
+
+        ttk.Label(video_outer,
+                  text="Set the Input Folder above then click Refresh to load videos.",
+                  font=('Arial', 9, 'italic')).pack(anchor='w')
+        ttk.Button(video_outer, text="↻  Refresh Video List",
+                   command=self.refresh_video_table).pack(anchor='w', pady=(4, 8))
+
+        # Header row
+        hdr = ttk.Frame(video_outer)
+        hdr.pack(fill='x')
+        for text, w in [("Include", 7), ("Video File", 26), ("Raster File", 34),
+                        ("Alias", 14), ("Colour", 8), ("Start (s)", 9), ("End (s)", 9)]:
+            ttk.Label(hdr, text=text, font=('Arial', 9, 'bold'), width=w, anchor='w').pack(side='left')
+
+        # Scrollable area for rows
+        tbl_canvas = tk.Canvas(video_outer, height=200, bg='white')
+        tbl_sb = ttk.Scrollbar(video_outer, orient='vertical', command=tbl_canvas.yview)
+        self.video_table_frame = ttk.Frame(tbl_canvas)
+        self.video_table_frame.bind(
+            "<Configure>",
+            lambda e: tbl_canvas.configure(scrollregion=tbl_canvas.bbox("all"))
+        )
+        tbl_canvas.create_window((0, 0), window=self.video_table_frame, anchor='nw')
+        tbl_canvas.configure(yscrollcommand=tbl_sb.set)
+        tbl_canvas.pack(side='left', fill='both', expand=True)
+        tbl_sb.pack(side='right', fill='y')
+
+        # Storage for per-video widgets
+        self.video_row_data = []   # list of dicts
+
+        # ── 4. Plot Settings ─────────────────────────────────────────────────
         plot_frame = ttk.LabelFrame(scrollable_frame, text="Plot Settings", padding=15)
         plot_frame.pack(fill='x', padx=20, pady=10)
-        
-        # Center all plot settings
+
         plot_center_frame = ttk.Frame(plot_frame)
         plot_center_frame.pack()
-        
-        # Background color
+
         bg_frame = ttk.Frame(plot_center_frame)
         bg_frame.pack(pady=8)
-        ttk.Label(bg_frame, text="Background Color:", font=('Arial', 10, 'bold')).pack(side='left', padx=(0,10))
-        bg_combo = ttk.Combobox(bg_frame, textvariable=self.bg_color, 
-                               values=["white", "black"], state="readonly", width=15)
-        bg_combo.pack(side='left')
-        
-        # Grid lines
+        ttk.Label(bg_frame, text="Background Color:", font=('Arial', 10, 'bold')).pack(side='left', padx=(0, 10))
+        ttk.Combobox(bg_frame, textvariable=self.bg_color,
+                     values=["white", "black"], state="readonly", width=15).pack(side='left')
+
         grid_frame = ttk.Frame(plot_center_frame)
         grid_frame.pack(pady=8)
         ttk.Checkbutton(grid_frame, text="Show Grid Lines", variable=self.show_grid).pack()
-        
-        # Figure size
+
         fig_frame = ttk.Frame(plot_center_frame)
         fig_frame.pack(pady=8)
-        ttk.Label(fig_frame, text="Figure Size:", font=('Arial', 10, 'bold')).pack(pady=(0,5))
-        
+        ttk.Label(fig_frame, text="Figure Size:", font=('Arial', 10, 'bold')).pack(pady=(0, 5))
         size_inputs = ttk.Frame(fig_frame)
         size_inputs.pack()
         ttk.Label(size_inputs, text="Width:").pack(side='left')
-        ttk.Entry(size_inputs, textvariable=self.figure_width, width=8).pack(side='left', padx=(5,15))
+        ttk.Entry(size_inputs, textvariable=self.figure_width, width=8).pack(side='left', padx=(5, 15))
         ttk.Label(size_inputs, text="Height:").pack(side='left')
         ttk.Entry(size_inputs, textvariable=self.figure_height, width=8).pack(side='left', padx=5)
-        
-        # Start Analysis Button
+
+        # ── 5. Start Analysis Button ─────────────────────────────────────────
         button_frame = ttk.Frame(scrollable_frame)
         button_frame.pack(pady=20)
-        analyse_btn = ttk.Button(button_frame, text="Start Analysis", 
-                                command=self.start_analysis,
-                                style='Accent.TButton')
-        analyse_btn.pack()
-        
+        ttk.Button(button_frame, text="Start Analysis",
+                   command=self.start_analysis,
+                   style='Accent.TButton').pack()
+
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
+
+    def refresh_video_table(self):
+        """Populate / refresh the per-video settings table from the input folder."""
+        folder = self.analysis_input_folder.get()
+        if not folder or not os.path.isdir(folder):
+            messagebox.showwarning("Warning", "Please set a valid Input Folder first.")
+            return
+
+        # Clear existing rows
+        for widget in self.video_table_frame.winfo_children():
+            widget.destroy()
+        self.video_row_data.clear()
+
+        video_exts = ('.mp4', '.avi', '.mov', '.mkv')
+        videos = sorted([f for f in os.listdir(folder) if f.lower().endswith(video_exts)])
+
+        if not videos:
+            ttk.Label(self.video_table_frame,
+                      text="No video files found in the selected folder.",
+                      foreground='red').pack(anchor='w', pady=4)
+            return
+
+        for video in videos:
+            stem = os.path.splitext(video)[0]
+            # Look for matching raster file
+            raster_candidates = [f for f in os.listdir(folder)
+                                  if f.endswith('.xlsx') and stem.lower() in f.lower()]
+            raster_name = raster_candidates[0] if raster_candidates else "(not found)"
+
+            row = ttk.Frame(self.video_table_frame)
+            row.pack(fill='x', pady=2)
+
+            include_var = tk.BooleanVar(value=True)
+            ttk.Checkbutton(row, variable=include_var, width=5).pack(side='left')
+
+            ttk.Label(row, text=video, width=26, anchor='w').pack(side='left')
+            ttk.Label(row, text=raster_name, width=34, anchor='w',
+                      foreground='gray' if raster_name == '(not found)' else 'black').pack(side='left')
+
+            alias_var = tk.StringVar(value=stem)
+            ttk.Entry(row, textvariable=alias_var, width=14).pack(side='left', padx=2)
+
+            color_var = tk.StringVar(value='#3498db')
+            color_lbl = tk.Label(row, text="  ", bg=color_var.get(), relief='raised', width=4)
+            color_lbl.pack(side='left', padx=2)
+            def _pick_color(cv=color_var, cl=color_lbl):
+                result = colorchooser.askcolor(title="Choose colour", color=cv.get())
+                if result and result[1]:
+                    cv.set(result[1])
+                    cl.config(bg=result[1])
+            ttk.Button(row, text="🎨", width=3, command=_pick_color).pack(side='left', padx=2)
+
+            start_var = tk.StringVar(value="0")
+            end_var = tk.StringVar(value="")
+            ttk.Entry(row, textvariable=start_var, width=8).pack(side='left', padx=2)
+            ttk.Entry(row, textvariable=end_var, width=8).pack(side='left', padx=2)
+
+            self.video_row_data.append({
+                'video': video,
+                'raster': raster_name,
+                'include': include_var,
+                'alias': alias_var,
+                'color': color_var,
+                'start': start_var,
+                'end': end_var,
+            })
+
     
     def create_train_tab(self):
         train_frame = ttk.Frame(self.notebook)

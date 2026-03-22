@@ -22,7 +22,7 @@ def plot_latency_to_first_scratch(file_path, output_path, fig_size=(10, 6)):
         labels = []
 
         for col in mouse_headers:
-            mouse_data = data[col]
+            mouse_data = pd.to_numeric(data[col], errors='coerce')
             nonzero_indices = mouse_data[mouse_data > 0].index
             if len(nonzero_indices) > 0:
                 latency_time = time.iloc[nonzero_indices[0]]
