@@ -1,7 +1,7 @@
 tkinter
-pandas==1.5.3
-ultralytics==8.0.20
-opencv-python==4.8.1.78
-openpyxl==3.1.2
+pandas
+ultralytics
+opencv-python
+openpyxl
 matplotlib
 scipy
