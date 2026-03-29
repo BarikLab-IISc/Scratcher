@@ -891,9 +891,11 @@ class ScratcherGUI:
             ttk.Entry(row, textvariable=start_var, width=8).pack(side='left', padx=2)
             ttk.Entry(row, textvariable=end_var, width=8).pack(side='left', padx=2)
 
+            raster_path = os.path.join(folder, raster_name) if raster_name != "(not found)" else ""
             self.video_row_data.append({
                 'video': video,
                 'raster': raster_name,
+                'raster_path': raster_path,
                 'include': include_var,
                 'alias': alias_var,
                 'color': color_var,
@@ -1171,258 +1173,158 @@ class ScratcherGUI:
         if not selected_analyses:
             messagebox.showwarning("Warning", "Please select at least one analysis option!")
             return
-        
-        # Output summary of run
+
+        import os
+
+        # ── Collect included raster files from the video table ───────────────
+        file_paths, labels, colors = [], [], []
+        for row in getattr(self, 'video_row_data', []):
+            if row["include"].get() and row.get("raster_path"):
+                fp = row["raster_path"]
+                if os.path.isfile(fp):
+                    file_paths.append(fp)
+                    labels.append(row["alias"].get() or row["video"])
+                    colors.append(row["color"].get())
+
         results_msg = []
-        
-        # New Feature: Itch Bout Frequency
+        fig_size = (float(self.figure_width.get()), float(self.figure_height.get()))
+        out_dir   = self.analysis_output_folder.get()
+
+        # ── Itch Bout Frequency (uses input folder directly) ─────────────────
         if "Itch Bout Frequency" in selected_analyses:
             try:
                 import bout_frequency_analysis
-                processed = bout_frequency_analysis.analyze_bout_frequency(self.analysis_input_folder.get(), self.analysis_output_folder.get())
+                processed = bout_frequency_analysis.analyze_bout_frequency(
+                    self.analysis_input_folder.get(), out_dir)
                 results_msg.append(f"Itch Bout Frequency: Processed {processed} raster files.")
             except Exception as e:
                 results_msg.append(f"Itch Bout Frequency Error: {e}")
-                
-        # New Feature: Slope of scratching session (individual mice)
-        # Note: we assume the user selected this and configured the input folder containing an Excel file
+
+        # ── Helper: check we have selected rasters ────────────────────────────
+        def need_rasters(name):
+            if not file_paths:
+                results_msg.append(
+                    f"{name}: No raster files found. "
+                    "Please Refresh the video list and check at least one row.")
+                return False
+            return True
+
+        # ── Slope of scratching session ───────────────────────────────────────
         if "Slope of scratching session (rate of increase or decrease)" in selected_analyses:
-            try:
-                import slope_individual_mice
-                import os
-                # Look for an xlsx file in the input directory to use for slope
-                file_path = filedialog.askopenfilename(
-                    title="Select Excel File for Slope Regression Analysis",
-                    filetypes=[("Excel files", "*.xlsx"), ("All files", "*.*")],
-                    initialdir=self.analysis_input_folder.get()
-                )
-                
-                if file_path:
-                    # Successfully picked a file
-                    output_path = os.path.join(self.analysis_output_folder.get(), f"slope_plot_{os.path.basename(file_path).replace('.xlsx', '.png')}")
-                    print(f"DEBUG: Chosen file path: {file_path}")
-                    print(f"DEBUG: Output path: {output_path}")
-                    
+            if need_rasters("Slope"):
+                try:
+                    import slope_individual_mice
+                    out = os.path.join(out_dir, "slope_plot.png")
                     success = slope_individual_mice.plot_slope_individual_mice(
-                        file_path=file_path,
-                        output_path=output_path,
-                        bg_color=self.bg_color.get(),
-                        fig_size=(float(self.figure_width.get()), float(self.figure_height.get()))
-                    )
-                    
-                    print(f"DEBUG: Success boolean: {success}")
-                    if success:
-                        results_msg.append(f"Slope Plotting: Saved to {output_path}")
-                    else:
-                        results_msg.append("Slope Plotting: Failed during plotting.")
-                else:
-                    results_msg.append("Slope Plotting: Cancelled by user.")
-            except Exception as e:
-                print(f"DEBUG: Slope Exception caught in GUI script: {e}")
-                results_msg.append(f"Slope Plotting Error: {e}")
-        
-        # Peak Scratching Duration
+                        file_paths=file_paths, labels=labels, colors=colors,
+                        output_path=out, bg_color=self.bg_color.get(), fig_size=fig_size)
+                    results_msg.append(f"Slope: Saved to {out}" if success
+                                       else "Slope: Failed during plotting.")
+                except Exception as e:
+                    results_msg.append(f"Slope Error: {e}")
+
+        # ── Peak Scratching Duration ──────────────────────────────────────────
         if "Peak Scratching Duration" in selected_analyses:
-            try:
-                import peak_scratch_duration
-                import os
-                file_path = filedialog.askopenfilename(
-                    title="Select Excel File for Peak Scratch Duration",
-                    filetypes=[("Excel files", "*.xlsx"), ("All files", "*.*")],
-                    initialdir=self.analysis_input_folder.get()
-                )
-                if file_path:
-                    output_path = os.path.join(
-                        self.analysis_output_folder.get(),
-                        f"peak_scratch_{os.path.basename(file_path).replace('.xlsx', '.png')}"
-                    )
+            if need_rasters("Peak Scratching Duration"):
+                try:
+                    import peak_scratch_duration
+                    out = os.path.join(out_dir, "peak_scratch_duration.png")
                     success = peak_scratch_duration.plot_peak_scratch_duration(
-                        file_path=file_path,
-                        output_path=output_path,
-                        fig_size=(float(self.figure_width.get()), float(self.figure_height.get()))
-                    )
-                    if success:
-                        results_msg.append(f"Peak Scratch Duration: Saved to {output_path}")
-                    else:
-                        results_msg.append("Peak Scratch Duration: Failed during plotting.")
-                else:
-                    results_msg.append("Peak Scratch Duration: Cancelled by user.")
-            except Exception as e:
-                print(f"DEBUG: Peak Scratch Duration Error: {e}")
-                results_msg.append(f"Peak Scratch Duration Error: {e}")
-        
-        # Area Under the Curve (AUC)
+                        file_paths=file_paths, labels=labels, colors=colors,
+                        output_path=out, fig_size=fig_size)
+                    results_msg.append(f"Peak Scratch Duration: Saved to {out}" if success
+                                       else "Peak Scratch Duration: Failed.")
+                except Exception as e:
+                    results_msg.append(f"Peak Scratch Duration Error: {e}")
+
+        # ── Area Under the Curve ──────────────────────────────────────────────
         if "Area Under the Curve (AUC)" in selected_analyses:
-            try:
-                import auc_analysis
-                import os
-                file_path = filedialog.askopenfilename(
-                    title="Select Excel File for AUC Analysis",
-                    filetypes=[("Excel files", "*.xlsx"), ("All files", "*.*")],
-                    initialdir=self.analysis_input_folder.get()
-                )
-                if file_path:
-                    output_path = os.path.join(
-                        self.analysis_output_folder.get(),
-                        f"auc_{os.path.basename(file_path).replace('.xlsx', '.png')}"
-                    )
+            if need_rasters("AUC"):
+                try:
+                    import auc_analysis
+                    out = os.path.join(out_dir, "auc.png")
                     success = auc_analysis.plot_auc(
-                        file_path=file_path,
-                        output_path=output_path,
-                        fig_size=(float(self.figure_width.get()), float(self.figure_height.get()))
-                    )
-                    if success:
-                        results_msg.append(f"AUC: Saved to {output_path}")
-                    else:
-                        results_msg.append("AUC: Failed during plotting.")
-                else:
-                    results_msg.append("AUC: Cancelled by user.")
-            except Exception as e:
-                print(f"DEBUG: AUC Error: {e}")
-                results_msg.append(f"AUC Error: {e}")
-        
-        # Entire Session Plot
+                        file_paths=file_paths, labels=labels, colors=colors,
+                        output_path=out, fig_size=fig_size)
+                    results_msg.append(f"AUC: Saved to {out}" if success
+                                       else "AUC: Failed.")
+                except Exception as e:
+                    results_msg.append(f"AUC Error: {e}")
+
+        # ── Entire Session Plot (group picker — user-defined) ─────────────────
         if "Entire Session Plot" in selected_analyses:
             try:
                 import entire_session_plot
-                import os
                 groups = []
                 while True:
-                    file_path = filedialog.askopenfilename(
-                        title=f"Select Excel File for Group {len(groups)+1} (Cancel to finish)",
-                        filetypes=[("Excel files", "*.xlsx"), ("All files", "*.*")],
+                    fp = filedialog.askopenfilename(
+                        title=f"Select Raster File for Group {len(groups)+1} (Cancel to finish)",
+                        filetypes=[("Raster Plot files", "raster*.xlsx"),
+                                   ("All Excel files", "*.xlsx")],
                         initialdir=self.analysis_input_folder.get()
                     )
-                    if not file_path:
-                        break  # user cancelled – done adding groups
-                    label = os.path.splitext(os.path.basename(file_path))[0]
-                    color_result = colorchooser.askcolor(
-                        title=f"Choose colour for: {label}",
-                        color="#1f77b4"
-                    )
-                    color = color_result[1] if color_result and color_result[1] else f"C{len(groups)}"
-                    groups.append({'file_path': file_path, 'label': label, 'color': color})
-
+                    if not fp:
+                        break
+                    lbl = os.path.splitext(os.path.basename(fp))[0]
+                    col_result = colorchooser.askcolor(title=f"Colour for: {lbl}",
+                                                       color="#1f77b4")
+                    col = col_result[1] if col_result and col_result[1] else f"C{len(groups)}"
+                    groups.append({'file_path': fp, 'label': lbl, 'color': col})
                 if groups:
-                    output_path = os.path.join(
-                        self.analysis_output_folder.get(),
-                        "entire_session_plot.png"
-                    )
+                    out = os.path.join(out_dir, "entire_session_plot.png")
                     success = entire_session_plot.plot_entire_session(
-                        groups=groups,
-                        output_path=output_path,
-                        fig_size=(float(self.figure_width.get()), float(self.figure_height.get()))
-                    )
-                    if success:
-                        results_msg.append(f"Entire Session Plot: Saved to {output_path}")
-                    else:
-                        results_msg.append("Entire Session Plot: Failed during plotting.")
+                        groups=groups, output_path=out, fig_size=fig_size)
+                    results_msg.append(f"Entire Session Plot: Saved to {out}" if success
+                                       else "Entire Session Plot: Failed.")
                 else:
                     results_msg.append("Entire Session Plot: No files selected.")
             except Exception as e:
-                print(f"DEBUG: Entire Session Plot Error: {e}")
                 results_msg.append(f"Entire Session Plot Error: {e}")
 
-        # Latency to First Scratch
+        # ── Latency to First Scratch ──────────────────────────────────────────
         if "Latency to First Scratch" in selected_analyses:
-            try:
-                import latency_first_scratch
-                import os
-                file_path = filedialog.askopenfilename(
-                    title="Select Excel File for Latency to First Scratch",
-                    filetypes=[("Excel files", "*.xlsx"), ("All files", "*.*")],
-                    initialdir=self.analysis_input_folder.get()
-                )
-                if file_path:
-                    output_path = os.path.join(
-                        self.analysis_output_folder.get(),
-                        f"latency_{os.path.basename(file_path).replace('.xlsx', '.png')}"
-                    )
+            if need_rasters("Latency to First Scratch"):
+                try:
+                    import latency_first_scratch
+                    out = os.path.join(out_dir, "latency_first_scratch.png")
                     success = latency_first_scratch.plot_latency_to_first_scratch(
-                        file_path=file_path,
-                        output_path=output_path,
-                        fig_size=(float(self.figure_width.get()), float(self.figure_height.get()))
-                    )
-                    if success:
-                        results_msg.append(f"Latency to First Scratch: Saved to {output_path}")
-                    else:
-                        results_msg.append("Latency to First Scratch: Failed during plotting.")
-                else:
-                    results_msg.append("Latency to First Scratch: Cancelled by user.")
-            except Exception as e:
-                print(f"DEBUG: Latency Error: {e}")
-                results_msg.append(f"Latency to First Scratch Error: {e}")
+                        file_paths=file_paths, labels=labels, colors=colors,
+                        output_path=out, fig_size=fig_size)
+                    results_msg.append(f"Latency to First Scratch: Saved to {out}" if success
+                                       else "Latency to First Scratch: Failed.")
+                except Exception as e:
+                    results_msg.append(f"Latency to First Scratch Error: {e}")
 
-        # Average Scratches per Mouse
+        # ── Average Scratches per Mouse ───────────────────────────────────────
         if "Average Scratches per Mouse" in selected_analyses:
-            try:
-                import average_scratches
-                import os
-                file_path = filedialog.askopenfilename(
-                    title="Select Excel File for Average Scratches per Mouse",
-                    filetypes=[("Excel files", "*.xlsx"), ("All files", "*.*")],
-                    initialdir=self.analysis_input_folder.get()
-                )
-                if file_path:
-                    output_path = os.path.join(
-                        self.analysis_output_folder.get(),
-                        f"avg_scratches_{os.path.basename(file_path).replace('.xlsx', '.png')}"
-                    )
+            if need_rasters("Average Scratches"):
+                try:
+                    import average_scratches
+                    out = os.path.join(out_dir, "average_scratches.png")
                     success = average_scratches.plot_average_scratches(
-                        file_path=file_path,
-                        output_path=output_path,
-                        fig_size=(float(self.figure_width.get()), float(self.figure_height.get()))
-                    )
-                    if success:
-                        results_msg.append(f"Average Scratches: Saved to {output_path}")
-                    else:
-                        results_msg.append("Average Scratches: Failed during plotting.")
-                else:
-                    results_msg.append("Average Scratches: Cancelled by user.")
-            except Exception as e:
-                print(f"DEBUG: Average Scratches Error: {e}")
-                results_msg.append(f"Average Scratches Error: {e}")
+                        file_paths=file_paths, labels=labels, colors=colors,
+                        output_path=out, fig_size=fig_size)
+                    results_msg.append(f"Average Scratches: Saved to {out}" if success
+                                       else "Average Scratches: Failed.")
+                except Exception as e:
+                    results_msg.append(f"Average Scratches Error: {e}")
 
-        # Heatmap (ΔF/F per Mouse)
+        # ── Heatmap (Itch binary per Mouse) ───────────────────────────────────
         if "Heatmap (ΔF/F per Mouse)" in selected_analyses:
-            try:
-                import heatmap_analysis
-                file_path = filedialog.askopenfilename(
-                    title="Select Excel File for Heatmap Analysis",
-                    filetypes=[("Excel files", "*.xlsx"), ("All files", "*.*")],
-                    initialdir=self.analysis_input_folder.get()
-                )
-                if file_path:
+            if need_rasters("Heatmap"):
+                try:
+                    import heatmap_analysis
                     saved = heatmap_analysis.plot_heatmaps(
-                        file_path=file_path,
-                        output_dir=self.analysis_output_folder.get(),
-                        fig_size=(float(self.figure_width.get()), float(self.figure_height.get()))
-                    )
-                    if saved:
-                        results_msg.append(f"Heatmap: Saved {saved} palette variants to {self.analysis_output_folder.get()}")
-                    else:
-                        results_msg.append("Heatmap: Failed during plotting.")
-                else:
-                    results_msg.append("Heatmap: Cancelled by user.")
-            except Exception as e:
-                print(f"DEBUG: Heatmap Error: {e}")
-                results_msg.append(f"Heatmap Error: {e}")
+                        file_paths=file_paths, labels=labels,
+                        output_dir=out_dir, fig_size=fig_size)
+                    results_msg.append(
+                        f"Heatmap: Saved {saved} palette variants to {out_dir}" if saved
+                        else "Heatmap: Failed.")
+                except Exception as e:
+                    results_msg.append(f"Heatmap Error: {e}")
 
-        unimplemented = [a for a in selected_analyses if a not in [
-            "Itch Bout Frequency",
-            "Slope of scratching session (rate of increase or decrease)",
-            "Peak Scratching Duration",
-            "Area Under the Curve (AUC)",
-            "Entire Session Plot",
-            "Latency to First Scratch",
-            "Average Scratches per Mouse",
-            "Heatmap (ΔF/F per Mouse)"
-        ]]
-        if unimplemented:
-            results_msg.append(f"Other selections ({len(unimplemented)} items) remain frontend placeholders.")
-        
-        messagebox.showinfo("Analysis Complete", "\n".join(results_msg))
-    
+        messagebox.showinfo("Analysis Complete", "\n".join(results_msg) or "Nothing to report.")
+
     def start_training(self):
         if not all([self.working_dir.get(), self.model_path.get(), 
                    self.data_config_path.get(), self.epochs.get()]):
