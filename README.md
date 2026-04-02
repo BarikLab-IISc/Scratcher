@@ -30,11 +30,11 @@
 ### 💥  What's New in Scratcher
 
 **📌 v1.4 (Coming Soon)**
-- 📊 All-new **Analysis Tab** with 8 fully integrated plotting features:
+- All-new **Analysis Tab** with 8 fully integrated plotting features:
   - Itch Bout Frequency, Slope of Scratching Session, Peak Scratching Duration, Area Under the Curve (AUC), Entire Session Plot, Latency to First Scratch, Average Scratches per Mouse, and Heatmap visualization
-- 🎨 Per-video **alias**, **colour picker**, and **time range** settings directly in the GUI
-- 🔧 Shared `raster_utils.py` backend for seamless raster file processing
-- 🚀 No more manual file selection per analysis — raster files are auto-detected from the input folder
+- Per-video **alias**, **colour picker**, and **time range** settings directly in the GUI
+- Shared `raster_utils.py` backend for seamless raster file processing
+- No more manual file selection per analysis — raster files are auto-detected from the input folder
 
 > ⚠️ **Note:** Scratcher **v1.3 is currently under maintenance**. In the meantime, please use `final_gui.py` which is fully functional:
 > ```bash
