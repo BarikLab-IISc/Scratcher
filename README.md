@@ -64,8 +64,6 @@
 - CUDA-compatible GPU (recommended for faster processing)
 - 8GB+ RAM (16GB+ recommended for large datasets)
 
----
-
 ### Installing in a Virtual Environment (Recommended)
 
 To avoid dependency conflicts, it is strongly recommended to install Scratcher inside a Python virtual environment.
@@ -90,8 +88,6 @@ python -m pip install -r requirements.txt
 python -c "import ultralytics; print('Installation successful!')"
 ````
 
----
-
 ### Quick Install (Without Virtual Environment)
 
 > ⚠️ We don't recommended this, but this section is provided for convenience.
@@ -115,8 +111,6 @@ python -c "import ultralytics; print('Installation successful!')"
    ```bash
    python -c "import ultralytics; print('Installation successful!')"
    ```
-
----
 
 ### Dependencies
 
