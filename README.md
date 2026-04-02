@@ -27,11 +27,25 @@
 
 **Scratcher** is an end-to-end deep learning-driven analysis suite for automated identification, quantification, and high-throughput analysis of nape-directed scratching behavior in rodent models of acute and chronic itch. This tool transforms behavioral classification problems into object detection tasks using state-of-the-art computer vision techniques to decipher the neural basis of various scratching behaviors.
 
-### 💥  What’s New in Scratcher
+### 💥  What's New in Scratcher
+
+**📌 v1.4 (Coming Soon)**
+- 📊 All-new **Analysis Tab** with 8 fully integrated plotting features:
+  - Itch Bout Frequency, Slope of Scratching Session, Peak Scratching Duration, Area Under the Curve (AUC), Entire Session Plot, Latency to First Scratch, Average Scratches per Mouse, and Heatmap visualization
+- 🎨 Per-video **alias**, **colour picker**, and **time range** settings directly in the GUI
+- 🔧 Shared `raster_utils.py` backend for seamless raster file processing
+- 🚀 No more manual file selection per analysis — raster files are auto-detected from the input folder
+
+> ⚠️ **Note:** Scratcher **v1.3 is currently under maintenance**. In the meantime, please use `final_gui.py` which is fully functional:
+> ```bash
+> cd Analyser
+> python final_gui.py
+> ```
 
 **📌 v1.3**
-- 💡 Scratcher 1.3(GUI version) now supports `.avi` file format
+- 💡 Scratcher 1.3 (GUI version) now supports `.avi` file format
 - 💡 A comprehensive, step-wise tutorial has been added to help new users get started with **Scratcher** and **Roboflow**
+
 
 ### Key Features
 
