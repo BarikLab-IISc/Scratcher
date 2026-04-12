@@ -1,37 +1,22 @@
-import pandas as pd
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
-from scipy.interpolate import make_interp_spline
-import os
+import raster_utils
 
 
-def _loess_smooth(x, y, smooth_factor=300):
-    """Cubic spline approximation for smoothing."""
-    x_new = np.linspace(x.min(), x.max(), smooth_factor)
-    spline = make_interp_spline(x, y, k=3)
-    y_smooth = spline(x_new)
-    return x_new, y_smooth
-
-
-def plot_entire_session(groups, output_path, fig_size=(10, 6)):
+def plot_entire_session(file_paths, labels, colors, output_path, fig_size=(10, 6)):
     """
-    Plots the full scratching session for multiple groups with SEM shading.
+    Plot each mouse's binary Itch series as an individual line over the session.
 
     Parameters
     ----------
-    groups : list of dict
-        Each dict must have keys:
-            'file_path' : str   – path to the Excel file
-            'label'     : str   – legend label for this group
-            'color'     : str   – matplotlib color string (e.g. '#ff0000' or 'blue')
-        The Excel file is expected to have columns: [Time, Mean, SEM, ...]
-    output_path : str
-        Full path (including filename) where the PNG will be saved.
-    fig_size : tuple
-        (width, height) in inches.
+    file_paths : list of str  — raster .xlsx paths (one per mouse)
+    labels     : list of str  — display name per mouse
+    colors     : list of str  — hex colour per mouse
+    output_path: str          — PNG save path
+    fig_size   : tuple
 
     Returns True on success, False on error.
     """
@@ -40,30 +25,35 @@ def plot_entire_session(groups, output_path, fig_size=(10, 6)):
         sns.set_context("talk")
 
         fig, ax = plt.subplots(figsize=fig_size)
-
         markers = ['o', 's', 'D', '^', 'v', 'P', '*', 'X']
 
-        for idx, grp in enumerate(groups):
-            df = pd.read_excel(grp['file_path'], header=0)
-            x   = df.iloc[:, 0]
-            y   = df.iloc[:, 1]
-            sem = df.iloc[:, 2]
-            color   = grp.get('color', f'C{idx}')
-            label   = grp.get('label', f'Group {idx + 1}')
-            marker  = markers[idx % len(markers)]
+        for idx, (fp, label, color) in enumerate(zip(file_paths, labels, colors)):
+            s = raster_utils.raster_to_binary(fp)
+            time = s.index.astype(float)
+            values = s.values
 
-            x_smooth, y_smooth = _loess_smooth(x, y)
+            # Rolling mean (window=60s) for a smoother line
+            window = min(60, len(values) // 3) if len(values) > 3 else 1
+            smoothed = np.convolve(values, np.ones(window) / window, mode='same')
 
-            ax.plot(x_smooth, y_smooth,
+            marker = markers[idx % len(markers)]
+            ax.plot(time, smoothed,
                     label=label, color=color, lw=2,
-                    marker=marker, markevery=30)
-            ax.fill_between(x,
-                            y - sem, y + sem,
-                            color=color, alpha=0.2)
+                    marker=marker, markevery=max(len(time) // 10, 1))
+            # SEM shading (using rolling std)
+            if len(values) > window:
+                rolling_std = np.array([
+                    values[max(0, i - window):i + window].std()
+                    for i in range(len(values))
+                ])
+                ax.fill_between(time,
+                                smoothed - rolling_std,
+                                smoothed + rolling_std,
+                                color=color, alpha=0.15)
 
-        ax.set_xlabel("Elapsed time (min) since injection", fontsize=13)
-        ax.set_ylabel("Scratching Duration (seconds)", fontsize=13)
-        ax.set_title("Scratching Behaviour Over Time", fontsize=15)
+        ax.set_xlabel("Time (seconds)", fontsize=13)
+        ax.set_ylabel("Itch Rate (smoothed)", fontsize=13)
+        ax.set_title("Scratching Behaviour Over Entire Session", fontsize=15)
         ax.legend(frameon=True, fancybox=True, shadow=True)
 
         plt.tight_layout()

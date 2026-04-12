@@ -1251,35 +1251,20 @@ class ScratcherGUI:
                 except Exception as e:
                     results_msg.append(f"AUC Error: {e}")
 
-        # ── Entire Session Plot (group picker — user-defined) ─────────────────
+        # ── Entire Session Plot (uses video table — no file picker) ────────────
         if "Entire Session Plot" in selected_analyses:
-            try:
-                import entire_session_plot
-                groups = []
-                while True:
-                    fp = filedialog.askopenfilename(
-                        title=f"Select Raster File for Group {len(groups)+1} (Cancel to finish)",
-                        filetypes=[("Raster Plot files", "raster*.xlsx"),
-                                   ("All Excel files", "*.xlsx")],
-                        initialdir=self.analysis_input_folder.get()
-                    )
-                    if not fp:
-                        break
-                    lbl = os.path.splitext(os.path.basename(fp))[0]
-                    col_result = colorchooser.askcolor(title=f"Colour for: {lbl}",
-                                                       color="#1f77b4")
-                    col = col_result[1] if col_result and col_result[1] else f"C{len(groups)}"
-                    groups.append({'file_path': fp, 'label': lbl, 'color': col})
-                if groups:
+            if need_rasters("Entire Session Plot"):
+                try:
+                    import entire_session_plot
                     out = os.path.join(out_dir, "entire_session_plot.png")
                     success = entire_session_plot.plot_entire_session(
-                        groups=groups, output_path=out, fig_size=fig_size)
+                        file_paths=file_paths, labels=labels, colors=colors,
+                        output_path=out, fig_size=fig_size)
                     results_msg.append(f"Entire Session Plot: Saved to {out}" if success
                                        else "Entire Session Plot: Failed.")
-                else:
-                    results_msg.append("Entire Session Plot: No files selected.")
-            except Exception as e:
-                results_msg.append(f"Entire Session Plot Error: {e}")
+                except Exception as e:
+                    results_msg.append(f"Entire Session Plot Error: {e}")
+
 
         # ── Latency to First Scratch ──────────────────────────────────────────
         if "Latency to First Scratch" in selected_analyses:
