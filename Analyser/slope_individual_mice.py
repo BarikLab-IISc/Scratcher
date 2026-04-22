@@ -36,8 +36,11 @@ def plot_slope_individual_mice(file_paths, labels, colors, output_path,
 
         for col, color in zip(mouse_columns, colors):
             y = wide[col]
-            reg = linregress(time, y)
-            slope, intercept, r_value = reg.slope, reg.intercept, reg.rvalue
+            if len(time) < 2:
+                slope, intercept, r_value = 0.0, 0.0, 0.0
+            else:
+                reg = linregress(time, y)
+                slope, intercept, r_value = reg.slope, reg.intercept, reg.rvalue
             regression_line = intercept + slope * time
 
             ax.scatter(time, y, color=color, s=35, edgecolor=text_color,
@@ -59,8 +62,11 @@ def plot_slope_individual_mice(file_paths, labels, colors, output_path,
         ax_inset.set_facecolor(bg_color)
         for col, color in zip(mouse_columns, colors):
             y = wide[col]
-            reg = linregress(time, y)
-            regression_line = reg.intercept + reg.slope * time
+            if len(time) < 2:
+                regression_line = 0.0 * time
+            else:
+                reg = linregress(time, y)
+                regression_line = reg.intercept + reg.slope * time
             ax_inset.plot(time, regression_line, color=color, linewidth=2)
         ax_inset.set_title("Regression Lines", fontsize=10, color=text_color)
         ax_inset.grid(True, linestyle='--', alpha=grid_alpha)

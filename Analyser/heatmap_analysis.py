@@ -17,6 +17,9 @@ def plot_heatmaps(file_paths, labels, output_dir, fig_size=(12, 6)):
     try:
         wide = raster_utils.build_wide_df(file_paths, labels)
         data_t = wide.set_index("seconds").transpose()
+        if data_t.empty:
+            print("Heatmap: No data to plot.")
+            return 0
         data_t.index = labels
 
         base = "heatmap_raster"

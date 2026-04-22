@@ -33,8 +33,12 @@ def plot_entire_session(file_paths, labels, colors, output_path, fig_size=(10, 6
             values = s.values
 
             # Rolling mean (window=60s) for a smoother line
-            window = min(60, len(values) // 3) if len(values) > 3 else 1
-            smoothed = np.convolve(values, np.ones(window) / window, mode='same')
+            window = 1
+            if len(values) == 0:
+                smoothed = np.array([])
+            else:
+                window = min(60, len(values) // 3) if len(values) > 3 else 1
+                smoothed = np.convolve(values, np.ones(window) / window, mode='same')
 
             marker = markers[idx % len(markers)]
             ax.plot(time, smoothed,

@@ -17,7 +17,10 @@ def plot_auc(file_paths, labels, colors, output_path, fig_size=(8, 6)):
             s = raster_utils.raster_to_binary(fp)
             t = s.index.astype(float).values
             y = s.values
-            auc_values.append(simpson(y, x=t))
+            if len(y) < 2:
+                auc_values.append(0.0)
+            else:
+                auc_values.append(simpson(y, x=t))
 
         fig, ax = plt.subplots(figsize=fig_size)
         ax.bar(labels, auc_values, color=colors)
