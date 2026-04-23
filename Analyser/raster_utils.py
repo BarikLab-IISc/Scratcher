@@ -45,6 +45,8 @@ def raster_to_binary(file_path: str, itch_label: str = "Itch") -> pd.Series:
     df = load_raster(file_path)
     binary = df["behaviour"].str.contains(itch_label, case=False).astype(float)
     binary.index = df["seconds"].astype(int)
+    # Deduplicate index by taking the maximum (so 1.0 overrides 0.0 for the same second)
+    binary = binary.groupby(binary.index).max()
     return binary
 
 

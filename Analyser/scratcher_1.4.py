@@ -1221,7 +1221,7 @@ class ScratcherGUI:
                     results_msg.append(f"Slope: Saved to {out}" if success
                                        else "Slope: Failed during plotting.")
                 except Exception as e:
-                    results_msg.append(f"Slope Error: {e}")
+                    results_msg.append(f"Slope Error: {str(e)}")
 
         # ── Peak Scratching Duration ──────────────────────────────────────────
         if "Peak Scratching Duration" in selected_analyses:
@@ -1235,7 +1235,7 @@ class ScratcherGUI:
                     results_msg.append(f"Peak Scratch Duration: Saved to {out}" if success
                                        else "Peak Scratch Duration: Failed.")
                 except Exception as e:
-                    results_msg.append(f"Peak Scratch Duration Error: {e}")
+                    results_msg.append(f"Peak Scratch Duration Error: {str(e)}")
 
         # ── Area Under the Curve ──────────────────────────────────────────────
         if "Area Under the Curve (AUC)" in selected_analyses:
