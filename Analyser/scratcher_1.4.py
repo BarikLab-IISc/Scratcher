@@ -858,9 +858,24 @@ class ScratcherGUI:
 
         for video in videos:
             stem = os.path.splitext(video)[0]
-            # Look for matching raster file
-            raster_candidates = [f for f in os.listdir(folder)
-                                  if f.endswith('.xlsx') and stem.lower() in f.lower()]
+            # Look for matching raster file (bidirectional: video stem in xlsx
+            # name OR xlsx stem in video stem, stripping common prefixes)
+            raster_candidates = []
+            for f in os.listdir(folder):
+                if not f.endswith('.xlsx'):
+                    continue
+                f_stem = os.path.splitext(f)[0].lower()
+                v_stem = stem.lower()
+                # Strip common raster prefixes for a cleaner comparison
+                for prefix in ("raster_plot_input_", "raster_"):
+                    if f_stem.startswith(prefix):
+                        f_stem_clean = f_stem[len(prefix):]
+                        break
+                else:
+                    f_stem_clean = f_stem
+                # Match if either name contains the other
+                if v_stem in f_stem or f_stem_clean in v_stem:
+                    raster_candidates.append(f)
             raster_name = raster_candidates[0] if raster_candidates else "(not found)"
 
             row = ttk.Frame(self.video_table_frame)
