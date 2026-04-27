@@ -1316,7 +1316,8 @@ class ScratcherGUI:
                     import heatmap_analysis
                     saved = heatmap_analysis.plot_heatmaps(
                         file_paths=file_paths, labels=labels,
-                        output_dir=out_dir, fig_size=fig_size)
+                        output_dir=out_dir, fig_size=fig_size,
+                        colors=colors)
                     results_msg.append(
                         f"Heatmap: Saved {saved} palette variants to {out_dir}" if saved
                         else "Heatmap: Failed.")
