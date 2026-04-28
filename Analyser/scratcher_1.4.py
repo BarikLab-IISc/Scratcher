@@ -858,12 +858,12 @@ class ScratcherGUI:
 
         for video in videos:
             stem = os.path.splitext(video)[0]
-            # Look for matching raster file (bidirectional: video stem in xlsx
-            # name OR xlsx stem in video stem, stripping common prefixes)
+            # Look for matching raster file — prefer raster_plot_input_ prefixed files
             raster_candidates = []
             for f in os.listdir(folder):
                 if not f.endswith('.xlsx'):
                     continue
+                f_lower = f.lower()
                 f_stem = os.path.splitext(f)[0].lower()
                 v_stem = stem.lower()
                 # Strip common raster prefixes for a cleaner comparison
@@ -876,6 +876,11 @@ class ScratcherGUI:
                 # Match if either name contains the other
                 if v_stem in f_stem or f_stem_clean in v_stem:
                     raster_candidates.append(f)
+
+            # Prioritise raster_plot_input_ files over raw detection outputs
+            raster_candidates.sort(
+                key=lambda x: (0 if x.lower().startswith("raster_plot_input_") else 1, x)
+            )
             raster_name = raster_candidates[0] if raster_candidates else "(not found)"
 
             row = ttk.Frame(self.video_table_frame)
@@ -1338,6 +1343,11 @@ class ScratcherGUI:
 
 def main():
     root = tk.Tk()
+
+    # macOS performance fix: reduce Retina 2x rendering overhead
+    import platform
+    if platform.system() == "Darwin":
+        root.tk.call('tk', 'scaling', 1.0)
     
     # Configure style for modern dark theme
     style = ttk.Style()
