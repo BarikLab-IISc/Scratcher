@@ -25,6 +25,7 @@ def plot_entire_session(file_paths, labels, colors, output_path, fig_size=(10, 6
         sns.set_context("talk")
 
         fig, ax = plt.subplots(figsize=fig_size)
+        markers = ['o', 's', 'D', '^', 'v', 'P', '*', 'X']
 
         for idx, (fp, label, color) in enumerate(zip(file_paths, labels, colors)):
             s = raster_utils.raster_to_binary(fp)
@@ -39,9 +40,10 @@ def plot_entire_session(file_paths, labels, colors, output_path, fig_size=(10, 6
                 window = min(60, len(values) // 3) if len(values) > 3 else 1
                 smoothed = np.convolve(values, np.ones(window) / window, mode='same')
 
+            marker = markers[idx % len(markers)]
             ax.plot(time, smoothed,
                     label=label, color=color, lw=2,
-                    marker='o', markevery=max(len(time) // 10, 1))
+                    marker=marker, markevery=max(len(time) // 10, 1))
             # SEM shading (using rolling std)
             if len(values) > window:
                 rolling_std = np.array([
