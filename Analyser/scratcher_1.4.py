@@ -858,9 +858,29 @@ class ScratcherGUI:
 
         for video in videos:
             stem = os.path.splitext(video)[0]
-            # Look for matching raster file
-            raster_candidates = [f for f in os.listdir(folder)
-                                  if f.endswith('.xlsx') and stem.lower() in f.lower()]
+            # Look for matching raster file — prefer raster_plot_input_ prefixed files
+            raster_candidates = []
+            for f in os.listdir(folder):
+                if not f.endswith('.xlsx'):
+                    continue
+                f_lower = f.lower()
+                f_stem = os.path.splitext(f)[0].lower()
+                v_stem = stem.lower()
+                # Strip common raster prefixes for a cleaner comparison
+                for prefix in ("raster_plot_input_", "raster_"):
+                    if f_stem.startswith(prefix):
+                        f_stem_clean = f_stem[len(prefix):]
+                        break
+                else:
+                    f_stem_clean = f_stem
+                # Match if either name contains the other
+                if v_stem in f_stem or f_stem_clean in v_stem:
+                    raster_candidates.append(f)
+
+            # Prioritise raster_plot_input_ files over raw detection outputs
+            raster_candidates.sort(
+                key=lambda x: (0 if x.lower().startswith("raster_plot_input_") else 1, x)
+            )
             raster_name = raster_candidates[0] if raster_candidates else "(not found)"
 
             row = ttk.Frame(self.video_table_frame)
@@ -1221,7 +1241,7 @@ class ScratcherGUI:
                     results_msg.append(f"Slope: Saved to {out}" if success
                                        else "Slope: Failed during plotting.")
                 except Exception as e:
-                    results_msg.append(f"Slope Error: {e}")
+                    results_msg.append(f"Slope Error: {str(e)}")
 
         # ── Peak Scratching Duration ──────────────────────────────────────────
         if "Peak Scratching Duration" in selected_analyses:
@@ -1235,7 +1255,7 @@ class ScratcherGUI:
                     results_msg.append(f"Peak Scratch Duration: Saved to {out}" if success
                                        else "Peak Scratch Duration: Failed.")
                 except Exception as e:
-                    results_msg.append(f"Peak Scratch Duration Error: {e}")
+                    results_msg.append(f"Peak Scratch Duration Error: {str(e)}")
 
         # ── Area Under the Curve ──────────────────────────────────────────────
         if "Area Under the Curve (AUC)" in selected_analyses:
@@ -1251,35 +1271,20 @@ class ScratcherGUI:
                 except Exception as e:
                     results_msg.append(f"AUC Error: {e}")
 
-        # ── Entire Session Plot (group picker — user-defined) ─────────────────
+        # ── Entire Session Plot (uses video table — no file picker) ────────────
         if "Entire Session Plot" in selected_analyses:
-            try:
-                import entire_session_plot
-                groups = []
-                while True:
-                    fp = filedialog.askopenfilename(
-                        title=f"Select Raster File for Group {len(groups)+1} (Cancel to finish)",
-                        filetypes=[("Raster Plot files", "raster*.xlsx"),
-                                   ("All Excel files", "*.xlsx")],
-                        initialdir=self.analysis_input_folder.get()
-                    )
-                    if not fp:
-                        break
-                    lbl = os.path.splitext(os.path.basename(fp))[0]
-                    col_result = colorchooser.askcolor(title=f"Colour for: {lbl}",
-                                                       color="#1f77b4")
-                    col = col_result[1] if col_result and col_result[1] else f"C{len(groups)}"
-                    groups.append({'file_path': fp, 'label': lbl, 'color': col})
-                if groups:
+            if need_rasters("Entire Session Plot"):
+                try:
+                    import entire_session_plot
                     out = os.path.join(out_dir, "entire_session_plot.png")
                     success = entire_session_plot.plot_entire_session(
-                        groups=groups, output_path=out, fig_size=fig_size)
+                        file_paths=file_paths, labels=labels, colors=colors,
+                        output_path=out, fig_size=fig_size)
                     results_msg.append(f"Entire Session Plot: Saved to {out}" if success
                                        else "Entire Session Plot: Failed.")
-                else:
-                    results_msg.append("Entire Session Plot: No files selected.")
-            except Exception as e:
-                results_msg.append(f"Entire Session Plot Error: {e}")
+                except Exception as e:
+                    results_msg.append(f"Entire Session Plot Error: {e}")
+
 
         # ── Latency to First Scratch ──────────────────────────────────────────
         if "Latency to First Scratch" in selected_analyses:
@@ -1316,7 +1321,8 @@ class ScratcherGUI:
                     import heatmap_analysis
                     saved = heatmap_analysis.plot_heatmaps(
                         file_paths=file_paths, labels=labels,
-                        output_dir=out_dir, fig_size=fig_size)
+                        output_dir=out_dir, fig_size=fig_size,
+                        colors=colors)
                     results_msg.append(
                         f"Heatmap: Saved {saved} palette variants to {out_dir}" if saved
                         else "Heatmap: Failed.")
@@ -1337,6 +1343,11 @@ class ScratcherGUI:
 
 def main():
     root = tk.Tk()
+
+    # macOS performance fix: reduce Retina 2x rendering overhead
+    import platform
+    if platform.system() == "Darwin":
+        root.tk.call('tk', 'scaling', 1.0)
     
     # Configure style for modern dark theme
     style = ttk.Style()

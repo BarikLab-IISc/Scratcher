@@ -14,7 +14,8 @@ def plot_average_scratches(file_paths, labels, colors, output_path, fig_size=(10
 
         for fp in file_paths:
             s = raster_utils.raster_to_binary(fp)
-            avg_values.append(s.mean() * 100.0)  # as percentage
+            val = s.mean() * 100.0 if not s.empty else 0.0
+            avg_values.append(val)  # as percentage
 
         fig, ax = plt.subplots(figsize=fig_size)
         ax.bar(labels, avg_values, color=colors)

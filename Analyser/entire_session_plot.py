@@ -1,37 +1,37 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.interpolate import make_interp_spline
-import os
+import raster_utils
 
 
 def _loess_smooth(x, y, smooth_factor=300):
-    """Cubic spline approximation for smoothing."""
-    x_new = np.linspace(x.min(), x.max(), smooth_factor)
-    spline = make_interp_spline(x, y, k=3)
+    """Cubic spline approximation for LOESS-like smoothing."""
+    x_arr = np.asarray(x, dtype=float)
+    y_arr = np.asarray(y, dtype=float)
+    if len(x_arr) < 4:          # need at least k+1 = 4 points for k=3
+        return x_arr, y_arr
+    x_new = np.linspace(x_arr.min(), x_arr.max(), smooth_factor)
+    spline = make_interp_spline(x_arr, y_arr, k=3)
     y_smooth = spline(x_new)
     return x_new, y_smooth
 
 
-def plot_entire_session(groups, output_path, fig_size=(10, 6)):
+def plot_entire_session(file_paths, labels, colors, output_path, fig_size=(10, 6)):
     """
-    Plots the full scratching session for multiple groups with SEM shading.
+    Plot each mouse's Itch activity as a spline-smoothed line over the session
+    with SEM shading — publication-quality style.
 
     Parameters
     ----------
-    groups : list of dict
-        Each dict must have keys:
-            'file_path' : str   – path to the Excel file
-            'label'     : str   – legend label for this group
-            'color'     : str   – matplotlib color string (e.g. '#ff0000' or 'blue')
-        The Excel file is expected to have columns: [Time, Mean, SEM, ...]
-    output_path : str
-        Full path (including filename) where the PNG will be saved.
-    fig_size : tuple
-        (width, height) in inches.
+    file_paths : list of str  — raster .xlsx paths (one per mouse)
+    labels     : list of str  — display name per mouse
+    colors     : list of str  — hex colour per mouse
+    output_path: str          — PNG save path
+    fig_size   : tuple
 
     Returns True on success, False on error.
     """
@@ -40,34 +40,61 @@ def plot_entire_session(groups, output_path, fig_size=(10, 6)):
         sns.set_context("talk")
 
         fig, ax = plt.subplots(figsize=fig_size)
-
         markers = ['o', 's', 'D', '^', 'v', 'P', '*', 'X']
 
-        for idx, grp in enumerate(groups):
-            df = pd.read_excel(grp['file_path'], header=0)
-            x   = df.iloc[:, 0]
-            y   = df.iloc[:, 1]
-            sem = df.iloc[:, 2]
-            color   = grp.get('color', f'C{idx}')
-            label   = grp.get('label', f'Group {idx + 1}')
-            marker  = markers[idx % len(markers)]
+        for idx, (fp, label, color) in enumerate(zip(file_paths, labels, colors)):
+            s = raster_utils.raster_to_binary(fp)
+            if s.empty:
+                continue
+            seconds = s.index.astype(float)
+            values = s.values
 
-            x_smooth, y_smooth = _loess_smooth(x, y)
+            # Bin into 1-minute windows: sum itch-seconds per minute
+            minute_bins = (seconds / 60).astype(int)
+            df_bin = pd.DataFrame({'minute': minute_bins, 'itch': values})
+            per_minute = df_bin.groupby('minute')['itch'].sum()
 
+            time_sec = per_minute.index.values.astype(float) * 60  # in seconds
+            counts = per_minute.values.astype(float)
+
+            if len(counts) == 0:
+                continue
+
+            # Rolling SEM for shading (window = 3 bins)
+            win = min(3, max(1, len(counts) // 3))
+            rolling_std = np.array([
+                counts[max(0, i - win):i + win + 1].std()
+                for i in range(len(counts))
+            ])
+
+            # LOESS-like spline smoothing for the line
+            x_smooth, y_smooth = _loess_smooth(time_sec, counts)
+
+            # Plot the smoothed line
+            marker = markers[idx % len(markers)]
             ax.plot(x_smooth, y_smooth,
                     label=label, color=color, lw=2,
                     marker=marker, markevery=30)
-            ax.fill_between(x,
-                            y - sem, y + sem,
+
+            # SEM shading on the original (non-smoothed) x-axis
+            ax.fill_between(time_sec,
+                            counts - rolling_std,
+                            counts + rolling_std,
                             color=color, alpha=0.2)
 
-        ax.set_xlabel("Elapsed time (min) since injection", fontsize=13)
-        ax.set_ylabel("Scratching Duration (seconds)", fontsize=13)
-        ax.set_title("Scratching Behaviour Over Time", fontsize=15)
+        # Axis styling
+        ax.set_xlabel("Time (seconds)", fontweight='bold')
+        ax.set_ylabel("Scratching Duration (seconds)", fontweight='bold')
+
+        # Clean up spines (keep left + bottom only)
+        sns.despine(ax=ax, top=True, right=True)
+
+        # Legend
         ax.legend(frameon=True, fancybox=True, shadow=True)
 
         plt.tight_layout()
-        plt.savefig(output_path, dpi=300, bbox_inches='tight')
+        plt.savefig(output_path, dpi=300, bbox_inches='tight',
+                    facecolor='white')
         plt.close(fig)
         return True
 
